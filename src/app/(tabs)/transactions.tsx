@@ -115,7 +115,7 @@ export default function TransactionsScreen() {
           refreshing={refreshing}
           onRefresh={() => load(0, 'refresh')}
           ListEmptyComponent={<EmptyView title="Гүйлгээ олдсонгүй" subtitle="Шүүлтээ өөрчлөх эсвэл шинэ гүйлгээ нэмнэ үү" />}
-          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primary} /> : null}
+          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primary} /> : undefined}
         />
       )}
       <Fab onPress={() => router.push('/transaction/new')} />
