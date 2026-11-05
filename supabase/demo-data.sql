@@ -15,7 +15,7 @@ begin
   delete from accounts where user_id = uid;
   delete from tags where user_id = uid;
   delete from budgets where user_id = uid;
-  insert into accounts (user_id, name, type, initial_balance) values (uid, 'Бэлэн мөнгө', 'cash', 50000) returning id into cash;
+  insert into accounts (user_id, name, type, initial_balance) values (uid, 'Бэлэн мөнгө', 'cash', 150000) returning id into cash;
   insert into accounts (user_id, name, type, initial_balance) values (uid, 'Хаан банк карт', 'card', 400000) returning id into card;
   insert into tags (user_id, name) values (uid, 'сургууль') returning id into t_uni;
   insert into tags (user_id, name) values (uid, 'найзууд') returning id into t_fr;
