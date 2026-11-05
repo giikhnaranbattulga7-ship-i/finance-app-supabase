@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoadingView } from '../components/StateViews';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { AuthProvider, useAuth } from '../context/AuthContext';
@@ -46,12 +46,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <StatusBar style="dark" />
-        <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.bg }}>
-          <OfflineBanner />
-          <View style={{ flex: 1 }}>
-            <RootNavigator />
-          </View>
-        </SafeAreaView>
+        <OfflineBanner />
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
+          <RootNavigator />
+        </View>
       </AuthProvider>
     </SafeAreaProvider>
   );
