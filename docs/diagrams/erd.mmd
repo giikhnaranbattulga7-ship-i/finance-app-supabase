@@ -1,0 +1,57 @@
+erDiagram
+  AUTH_USERS ||--|| PROFILES : "1:1"
+  PROFILES ||--o{ ACCOUNTS : "1:N"
+  PROFILES ||--o{ CATEGORIES : "1:N (өөрийн)"
+  PROFILES ||--o{ TRANSACTIONS : "1:N"
+  PROFILES ||--o{ BUDGETS : "1:N"
+  PROFILES ||--o{ TAGS : "1:N"
+  PROFILES ||--o{ PREMIUM_ORDERS : "1:N"
+  ACCOUNTS ||--o{ TRANSACTIONS : "1:N"
+  CATEGORIES ||--o{ TRANSACTIONS : "1:N"
+  CATEGORIES ||--o{ BUDGETS : "1:N"
+  TRANSACTIONS ||--o{ TRANSACTION_TAGS : "N:M"
+  TAGS ||--o{ TRANSACTION_TAGS : "N:M"
+  AUTH_USERS { uuid id PK
+    text email }
+  PROFILES { uuid id PK,FK
+    text full_name
+    text role "guest|user|admin"
+    bool is_premium
+    timestamptz created_at }
+  ACCOUNTS { uuid id PK
+    uuid user_id FK
+    text name
+    text type "cash|bank|card|savings"
+    numeric initial_balance
+    text currency }
+  CATEGORIES { uuid id PK
+    uuid user_id FK "null = үндсэн"
+    text name
+    text type "income|expense"
+    text icon
+    text color }
+  TRANSACTIONS { uuid id PK
+    uuid user_id FK
+    uuid account_id FK
+    uuid category_id FK
+    text type
+    numeric amount "> 0"
+    text note
+    date occurred_at }
+  BUDGETS { uuid id PK
+    uuid user_id FK
+    uuid category_id FK
+    date month
+    numeric limit_amount }
+  TAGS { uuid id PK
+    uuid user_id FK
+    text name }
+  TRANSACTION_TAGS { uuid transaction_id PK,FK
+    uuid tag_id PK,FK }
+  PREMIUM_ORDERS { uuid id PK
+    uuid user_id FK
+    text plan
+    numeric amount
+    text status "pending|paid|cancelled"
+    text invoice_id
+    timestamptz paid_at }

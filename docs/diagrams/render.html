@@ -1,0 +1,6 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:'Noto Sans',sans-serif}#d{display:inline-block;padding:24px}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script></head>
+<body><div id="d"></div><script>
+mermaid.initialize({startOnLoad:false,theme:'default',themeVariables:{fontSize:'16px',primaryColor:'#EEF2FF',primaryBorderColor:'#4F46E5',lineColor:'#4F46E5'}});
+window.renderMmd=async(src)=>{const {svg}=await mermaid.render('g',src);const d=document.getElementById('d');d.innerHTML=svg;const s=d.querySelector('svg');const vb=s.viewBox.baseVal;s.style.maxWidth='none';s.setAttribute('width',vb.width*1.5);s.setAttribute('height',vb.height*1.5);return true;}
+</script></body></html>
