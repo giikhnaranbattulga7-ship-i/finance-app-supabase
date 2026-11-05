@@ -241,3 +241,20 @@ create policy "orders admin delete" on public.premium_orders for delete
 grant select on public.categories to anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant select on public.account_balances to authenticated;
+
+-- =====================================================================
+-- Захиалга 'paid' болоход хэрэглэгчийг premium болгоно
+-- (Хамгаалалт-2: QPay webhook → Edge Function → status='paid' → энэ trigger)
+-- =====================================================================
+create or replace function public.on_order_paid()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.status = 'paid' and old.status is distinct from 'paid' then
+    update public.profiles set is_premium = true where id = new.user_id;
+  end if;
+  return new;
+end; $$;
+
+drop trigger if exists premium_orders_paid on public.premium_orders;
+create trigger premium_orders_paid after update on public.premium_orders
+  for each row execute function public.on_order_paid();
