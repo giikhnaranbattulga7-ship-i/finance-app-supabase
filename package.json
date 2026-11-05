@@ -32,7 +32,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "build:web": "expo export -p web"
+    "build:web": "expo export -p web",
+    "test:rls": "node scripts/rls-test.mjs"
   },
   "private": true
 }
