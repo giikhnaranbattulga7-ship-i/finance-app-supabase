@@ -1,11 +1,16 @@
-// Апп даяар хэрэглэх өнгөнүүд — нэг газар хадгалснаар засахад амар
+// Апп даяар хэрэглэх өнгө, хэмжээ — нэг газар хадгалснаар дизайн нэгдмэл байна
 export const colors = {
-  primary: '#4F46E5', // үндсэн ягаан-цэнхэр
-  income: '#16A34A', // орлого - ногоон
-  expense: '#DC2626', // зарлага - улаан
-  bg: '#F3F4F6', // дэвсгэр
-  card: '#FFFFFF', // карт
-  text: '#111827', // үндсэн текст
-  muted: '#6B7280', // бүдэг текст
-  border: '#E5E7EB', // хүрээ
+  primary: '#4F46E5',
+  primarySoft: '#EEF2FF',
+  income: '#16A34A',
+  expense: '#DC2626',
+  warning: '#F59E0B',
+  bg: '#F3F4F6',
+  card: '#FFFFFF',
+  text: '#111827',
+  muted: '#6B7280',
+  border: '#E5E7EB',
 };
+
+export const radius = { sm: 8, md: 12, lg: 20 };
+export const spacing = { xs: 4, sm: 8, md: 16, lg: 24 };
