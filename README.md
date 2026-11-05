@@ -2,6 +2,8 @@
 
 **SWM231 Мобайл програмчлал — Бие даалтын төсөл · Хамгаалалт-1**
 
+🌐 **Web demo:** https://finance-app-supabase.vercel.app · demo: `demo.user@financeapp.test` / `Demo1234!`
+
 React Native (Expo) + TypeScript + Expo Router + Supabase ашигласан, хувийн орлого, зарлага, данс, төсөв, шошгоо нэг дор хянах full-stack мобайл апп.
 
 ## 🎯 Шийдэх асуудал
