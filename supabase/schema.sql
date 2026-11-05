@@ -129,11 +129,12 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Энгийн хэрэглэгч өөрийн role / is_premium-ийг өөрчлөхөөс хамгаална
+-- Энгийн хэрэглэгч өөрийн role / is_premium-ийг өөрчлөхөөс хамгаална.
+-- auth.uid() null = SQL editor / service_role (backend) → зөвшөөрнө.
 create or replace function public.protect_profile_fields()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin() and coalesce(auth.role(), '') <> 'service_role' then
+  if auth.uid() is not null and not public.is_admin() then
     new.role := old.role;
     new.is_premium := old.is_premium;
   end if;
