@@ -85,6 +85,85 @@ test('migration on repository base keeps old rows and date column', async () => 
   await db.close();
 });
 
+test('production note limit 200 and eight existing rows survive import', async () => {
+  const { migration } = parts();
+  const db = await baseDb();
+  const account = await db.query<{ id: string }>(
+    `insert into public.accounts (user_id, name, type, initial_balance) values ('${USER_A}', 'Хаан', 'bank', 1000.00) returning id`,
+  );
+  const accountId = account.rows[0].id;
+  for (let i = 1; i <= 8; i += 1) {
+    await db.exec(
+      `insert into public.transactions (user_id, account_id, type, amount, note, occurred_at)
+       values ('${USER_A}', '${accountId}', 'expense', ${i}.50, 'хуучин ${i}', '2026-01-0${i}')`,
+    );
+  }
+  const before = await db.query<{ id: string; xmin: string }>(
+    `select id::text, xmin::text as xmin from public.transactions order by note`,
+  );
+  assert.equal(before.rows.length, 8);
+  await db.exec(migration);
+  const after = await db.query<{ id: string; xmin: string; typ: string; precision: number; scale: number; note_check: string }>(`
+    select t.id::text, t.xmin::text as xmin, c.data_type as typ, c.numeric_precision as precision, c.numeric_scale as scale,
+      (select pg_get_constraintdef(con.oid) from pg_constraint con
+        join pg_class rel on rel.oid = con.conrelid
+        where rel.relname = 'transactions' and con.conname = 'transactions_note_check') as note_check
+    from public.transactions t
+    join information_schema.columns c on c.table_schema = 'public' and c.table_name = 'transactions' and c.column_name = 'amount'
+    order by t.note
+  `);
+  assert.deepEqual(after.rows.map((row) => [row.id, row.xmin]), before.rows.map((row) => [row.id, row.xmin]));
+  assert.equal(after.rows[0].typ, 'numeric');
+  assert.equal(Number(after.rows[0].precision), 14);
+  assert.equal(Number(after.rows[0].scale), 2);
+  assert.match(after.rows[0].note_check, /char_length\(note\) <= 200/);
+  const policies = await db.query<{ polname: string; def: string }>(`
+    select polname, coalesce(pg_get_expr(polqual, polrelid), '') || ' ' || coalesce(pg_get_expr(polwithcheck, polrelid), '') as def
+    from pg_policy where polrelid = 'public.transactions'::regclass order by polname
+  `);
+  const byName = Object.fromEntries(policies.rows.map((row) => [row.polname, row.def]));
+  assert.match(byName['transactions owner all'], /user_id = auth\.uid\(\)/);
+  assert.match(byName['transactions owner all'], /accounts/);
+  assert.match(byName['transactions admin read'], /is_admin\(\)/);
+  const trigger = await db.query<{ n: string }>(
+    `select count(*)::text as n from pg_trigger where tgname = 'profiles_protect' and not tgisinternal`,
+  );
+  assert.equal(trigger.rows[0].n, '1');
+
+  const shortRow = JSON.stringify([{
+    occurred_at: '2026-02-01', posted_time: '10:00', direction: 'out', amount_cents: 100,
+    balance_after_cents: 0, note: 'богино', kind: 'normal', category_id: null, occ: 0, exclude: false,
+  }]);
+  await db.exec(`select set_config('request.jwt.claim.sub', '${USER_A}', false)`);
+  await db.exec('set role authenticated');
+  const saved = await db.query<{ result: { inserted: number } }>(
+    `select public.commit_statement_import($1,'synthetic.pdf',$2,'MNT','2026-02-01','2026-02-01','1000.00','999.00','****0019',false,$3::jsonb) as result`,
+    [accountId, 'a'.repeat(64), shortRow],
+  );
+  assert.equal(saved.rows[0].result.inserted, 1);
+  const longNote = 'б'.repeat(201);
+  const longRow = JSON.stringify([{
+    occurred_at: '2026-02-02', posted_time: '11:00', direction: 'out', amount_cents: 100,
+    balance_after_cents: 0, note: longNote, kind: 'normal', category_id: null, occ: 0, exclude: false,
+  }]);
+  await assert.rejects(
+    db.query(
+      `select public.commit_statement_import($1,'long.pdf',$2,'MNT','2026-02-02','2026-02-02','1000.00','999.00','****0019',false,$3::jsonb)`,
+      [accountId, 'b'.repeat(64), longRow],
+    ),
+    /200 тэмдэгтээс урт/,
+  );
+  const count = await db.query<{ n: string }>(`select count(*)::text as n from public.transactions`);
+  assert.equal(count.rows[0].n, '9');
+  const kept = await db.query<{ note: string }>(`select note from public.transactions where note like 'хуучин%' order by note`);
+  assert.equal(kept.rows.length, 8);
+  await db.exec('reset role');
+  await db.exec(`delete from public.accounts where id = '${accountId}'`);
+  const gone = await db.query<{ n: string }>(`select count(*)::text as n from public.transactions where account_id = '${accountId}'`);
+  assert.equal(gone.rows[0].n, '0');
+  await db.close();
+});
+
 test('migration aborts when occurred_at is not date', async () => {
   const { migration } = parts();
   const db = await baseDb();

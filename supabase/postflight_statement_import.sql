@@ -83,6 +83,41 @@ from (
   from information_schema.columns
   where table_schema = 'public' and table_name = 'account_balances'
   union all
+  select 125, 'note_check_still_200',
+    case when count(*) = 1 and bool_and(pg_get_constraintdef(con.oid) ~ 'char_length\(note\) <= 200([^0-9]|$)') then 'ok' else 'blocker' end,
+    coalesce(string_agg(con.conname || ' ' || pg_get_constraintdef(con.oid), ' | '), 'missing')
+  from pg_constraint con
+  join pg_class rel on rel.oid = con.conrelid
+  join pg_namespace nsp on nsp.oid = rel.relnamespace
+  where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
+    and pg_get_constraintdef(con.oid) ilike '%note%'
+  union all
+  select 126, 'owner_check_keeps_account',
+    case when pg_get_expr(polwithcheck, polrelid) like '%accounts%' and pg_get_expr(polqual, polrelid) like '%user_id = auth.uid()%' then 'ok' else 'blocker' end,
+    left(coalesce(pg_get_expr(polwithcheck, polrelid), ''), 240)
+  from pg_policy
+  where polrelid = 'public.transactions'::regclass and polname = 'transactions owner all'
+  union all
+  select 127, 'admin_read_kept',
+    case when pg_get_expr(polqual, polrelid) like '%is_admin()%' and polcmd::text = 'r' then 'ok' else 'blocker' end,
+    coalesce(pg_get_expr(polqual, polrelid), 'missing')
+  from pg_policy
+  where polrelid = 'public.transactions'::regclass and polname = 'transactions admin read'
+  union all
+  select 128, 'profiles_protect_kept',
+    case when count(*) = 1 then 'ok' else 'blocker' end,
+    count(*)::text
+  from pg_trigger tg
+  join pg_class rel on rel.oid = tg.tgrelid
+  join pg_namespace nsp on nsp.oid = rel.relnamespace
+  where nsp.nspname = 'public' and rel.relname = 'profiles' and tg.tgname = 'profiles_protect' and not tg.tgisinternal
+  union all
+  select 129, 'amount_still_numeric_14_2',
+    case when data_type = 'numeric' and numeric_precision = 14 and numeric_scale = 2 then 'ok' else 'blocker' end,
+    data_type || ' ' || coalesce(numeric_precision::text, 'none') || ',' || coalesce(numeric_scale::text, 'none')
+  from information_schema.columns
+  where table_schema = 'public' and table_name = 'transactions' and column_name = 'amount'
+  union all
   select 130, 'transaction_row_count', 'info', count(*)::text from public.transactions
   union all
   select 140, 'statement_import_row_count', 'info', count(*)::text from public.statement_imports

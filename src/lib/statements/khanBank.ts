@@ -166,7 +166,9 @@ export function withBalanceIssues(rows: DraftRow[]): DraftRow[] {
     if (previous?.closingCents != null && row.openingCents != null && previous.closingCents !== row.openingCents) {
       row.issues.push('Өмнөх мөрийн эцсийн үлдэгдэлтэй залгаагүй байна.');
     }
-    if (row.note.length > STATEMENT_LIMITS.maxNote) row.issues.push('Утга хэт урт байна.');
+    if (row.note.length > STATEMENT_LIMITS.maxNote) {
+      row.issues.push(`Утга ${STATEMENT_LIMITS.maxNote} тэмдэгтээс урт. Богиносгоод хадгална уу.`);
+    }
     if (row.openingCents != null || row.closingCents != null) previous = row;
   }
   return next;
@@ -175,10 +177,6 @@ export function withBalanceIssues(rows: DraftRow[]): DraftRow[] {
 function appendNote(row: DraftRow, extra: string) {
   if (!extra) return;
   row.note = `${row.note} ${extra}`.replace(/\s+/g, ' ').trim();
-  if (row.note.length > STATEMENT_LIMITS.maxNote) {
-    row.note = row.note.slice(0, STATEMENT_LIMITS.maxNote);
-    if (!row.issues.includes('Утгыг 500 тэмдэгтээр таслав.')) row.issues.push('Утгыг 500 тэмдэгтээр таслав.');
-  }
 }
 
 export function parseKhanStatement(pages: TextPage[]): ParsedStatement {

@@ -71,9 +71,9 @@ begin
   ) then
     raise exception 'prerequisite: суурь хүснэгтийн RLS унтраалттай байна';
   end if;
-  select count(*) into v_long from public.transactions where char_length(note) > 500;
+  select count(*) into v_long from public.transactions where char_length(note) > 200;
   if v_long > 0 then
-    raise exception 'prerequisite: % гүйлгээний тэмдэглэл 500 тэмдэгтээс урт', v_long;
+    raise exception 'prerequisite: % гүйлгээний тэмдэглэл 200 тэмдэгтээс урт. Мөрийг update хийхгүй', v_long;
   end if;
   select count(*) into v_open
   from pg_policy p
@@ -159,27 +159,26 @@ alter table public.transactions add constraint transactions_fingerprint_pair_che
 
 do $$
 declare
+  v_limit int;
   v_odd int;
 begin
+  select substring(pg_get_constraintdef(con.oid) from 'char_length\(note\) <= ([0-9]+)')::int
+    into v_limit
+  from pg_constraint con
+  join pg_class rel on rel.oid = con.conrelid
+  join pg_namespace nsp on nsp.oid = rel.relnamespace
+  where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
+    and pg_get_constraintdef(con.oid) ~ 'char_length\(note\) <= [0-9]+'
+  limit 1;
   select count(*) into v_odd
   from pg_constraint con
   join pg_class rel on rel.oid = con.conrelid
   join pg_namespace nsp on nsp.oid = rel.relnamespace
   where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
     and pg_get_constraintdef(con.oid) ilike '%note%'
-    and pg_get_constraintdef(con.oid) not ilike '%char_length(note) <= 500%';
-  if v_odd > 0 then
-    raise exception 'prerequisite: transactions.note дээр өөр check байна';
-  end if;
-  if not exists (
-    select 1
-    from pg_constraint con
-    join pg_class rel on rel.oid = con.conrelid
-    join pg_namespace nsp on nsp.oid = rel.relnamespace
-    where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
-      and pg_get_constraintdef(con.oid) ilike '%char_length(note) <= 500%'
-  ) then
-    alter table public.transactions add constraint transactions_note_len check (char_length(note) <= 500);
+    and pg_get_constraintdef(con.oid) !~ 'char_length\(note\) <= [0-9]+';
+  if v_odd > 0 or v_limit is null or v_limit <> 200 then
+    raise exception 'prerequisite: transactions_note_check char_length(note) <= 200 хэвээр байх ёстой';
   end if;
 end $$;
 
@@ -460,7 +459,10 @@ begin
     v_balance_cents := (v_row->>'balance_after_cents')::bigint;
     v_occ := (v_row->>'occ')::int;
     v_time := nullif(coalesce(v_row->>'posted_time', ''), '');
-    v_note := left(btrim(coalesce(v_row->>'note', '')), 500);
+    v_note := btrim(coalesce(v_row->>'note', ''));
+    if char_length(v_note) > 200 then
+      raise exception 'Тэмдэглэл 200 тэмдэгтээс урт байна. Богиносгоод дахин хадгална уу.';
+    end if;
     v_category := nullif(v_row->>'category_id', '')::uuid;
     v_date := (v_row->>'occurred_at')::date;
     v_base := public.statement_fingerprint(v_date, coalesce(v_time, ''), v_dir, v_amount_cents, v_balance_cents);

@@ -124,6 +124,18 @@ test('balance break stays visible instead of being dropped', () => {
   assert.ok(checked.issues.some((issue) => issue.includes('эцсийн үлдэгдэл')));
 });
 
+test('note longer than 200 is kept and blocks save', () => {
+  const note = 'а'.repeat(201);
+  const [checked] = withBalanceIssues([{
+    id: '1', page: 1, lineNo: 1, occurredAt: '2026-01-01', postedTime: '10:00',
+    openingCents: 1000, amountCents: -100, closingCents: 900, note,
+    kind: 'normal', categoryName: 'Хоол хүнс', confidence: 'high', reason: '',
+    excluded: false, issues: [], sourcePreview: '',
+  }]);
+  assert.equal(checked.note, note);
+  assert.match(checked.issues.join(' '), /200 тэмдэгтээс урт/);
+});
+
 test('encrypted, scanned, corrupt and other-bank files are rejected', async () => {
   await assert.rejects(parseStatementFile(ascii('%PDF-1.4\n1 0 obj << /Encrypt 2 0 R >> endobj\n')), (error: unknown) => {
     return error instanceof StatementFileError && error.code === 'encrypted';

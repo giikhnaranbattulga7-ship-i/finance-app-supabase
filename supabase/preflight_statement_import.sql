@@ -90,11 +90,23 @@ from (
   where n.nspname = 'public'
     and p.proname in ('sha256_hex','statement_fingerprint','commit_statement_import','preview_statement_duplicates','rollback_statement_import','protect_import_status')
   union all
-  select 150, 'notes_longer_than_500',
+  select 145, 'note_check_200',
+    case
+      when count(*) = 1 and bool_and(pg_get_constraintdef(con.oid) ~ 'char_length\(note\) <= 200([^0-9]|$)') then 'ok'
+      else 'blocker'
+    end,
+    coalesce(string_agg(con.conname || ' ' || pg_get_constraintdef(con.oid), ' | '), 'missing')
+  from pg_constraint con
+  join pg_class rel on rel.oid = con.conrelid
+  join pg_namespace nsp on nsp.oid = rel.relnamespace
+  where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
+    and pg_get_constraintdef(con.oid) ilike '%note%'
+  union all
+  select 150, 'notes_longer_than_200',
     case when count(*) = 0 then 'ok' else 'blocker' end,
     count(*)::text
   from public.transactions
-  where char_length(note) > 500
+  where char_length(note) > 200
   union all
   select 160, 'transaction_row_count', 'info', count(*)::text from public.transactions
   union all

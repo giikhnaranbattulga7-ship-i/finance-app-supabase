@@ -250,7 +250,7 @@ export default function StatementScreen() {
             <Text style={styles.hint}>Файл энэ төхөөрөмж дээр уншигдана. Гадаад AI эсвэл гуравдагч сервер рүү илгээхгүй. Хадгалахыг тусад нь дарна.</Text>
             <Text style={styles.hint}>Дэмжинэ: Хаан банкны дансны хуулга (текст сонгогддог PDF), олон хуудас, мөр дамжсан утга, орлого/зарлага, 2 орны дүн.</Text>
             <Text style={styles.hint}>Дэмжихгүй: нууц үгтэй PDF, сканнер/зураг, Excel, бусад банк. Бүх PDF-ийг ойлгоно гэж үзэхгүй.</Text>
-            <Text style={styles.hint}>Хязгаар: 8 МБ, 25 хуудас, 2500 мөр. Интернетгүй үед хадгалахгүй.</Text>
+            <Text style={styles.hint}>Хязгаар: 8 МБ, 25 хуудас, 2500 мөр. Утга 200 тэмдэгтээс урт бол хадгалахын өмнө богиносгоно. Интернетгүй үед хадгалахгүй.</Text>
             <Button title={offline ? 'Интернэтгүй байна' : 'PDF сонгох'} onPress={pick} disabled={offline} />
             <Button title="Оруулсан хуулгууд" variant="outline" onPress={() => router.push('/statement-history')} style={{ marginTop: 10 }} />
           </Card>
