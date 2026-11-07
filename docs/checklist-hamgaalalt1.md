@@ -8,7 +8,7 @@
 
 | Үзүүлэлт | Оноо | Төлөв | Нотолгоо |
 |---|---|---|---|
-| Шаардлага ба дизайн | 2 | хэсэгчлэн | Асуудал, урсгал README болон `docs/statement-import-design.md`. ERD-ийн эх нь `docs/diagrams/erd.mmd` (9 хүснэгт, `statement_imports` орсон, 1:N болон N:M). **Figma холбоос байхгүй** (`figma.com` хайлт хоосон). `docs/erd.png` хуучин зураг, шинэ хүснэгтийг харуулахгүй. |
+| Шаардлага ба дизайн | 2 | хэсэгчлэн | Асуудал, урсгал README болон `docs/statement-import-design.md`. ERD-ийн эх нь `docs/diagrams/erd.mmd`, зураг нь `docs/erd.png` (9 хүснэгт, `statement_imports` орсон, 1:N болон N:M). **Figma холбоос байхгүй** (`figma.com` хайлт хоосон). |
 | React Native ба кодын бүтэц | 2 | баталгаажсан (код) | `src/app` дэлгэц, `src/services` өгөгдөл, `src/lib` тооцоо. Expo Router tab + `Stack.Protected`. `npx tsc --noEmit` амжилттай. |
 | Supabase backend | 3 | баталгаажсан (локал SQL) / production дутуу | RLS, Auth trigger, `security invoker` функц. `npm run test:import-db` 2/2. Production дээр миграци хийгээгүй. |
 | Ажиллагаа (Expo Go / эмулятор) | 2 | дутуу | Вэб export амжилттай. **Expo Go болон эмулятор энэ орчинд асаагаагүй.** Бодит утсан дээр CRUD-ийг «ажилласан» гэж хэлэхгүй. |
@@ -24,7 +24,7 @@
 | SecureStore (утсан дээр), web дээр localStorage | код бэлэн | `src/lib/secureStorage.ts` |
 | Зочин / хэрэглэгч / админ | код бэлэн | `src/app/_layout.tsx` 18–36-р мөр, `Stack.Protected` |
 | Хамгийн багадаа 6 хүснэгт, PK/FK, 1:N, N:M | баталгаажсан | 9 хүснэгт. N:M нь `transaction_tags`. 1:N олон. |
-| ERD | хэсэгчлэн | `docs/diagrams/erd.mmd` шинэ. `docs/erd.png` хуучин. Figma ERD байхгүй. |
+| ERD | хэсэгчлэн | `docs/diagrams/erd.mmd` болон `docs/erd.png` дээр `statement_imports` байна. Figma ERD байхгүй. |
 | CRUD, validation, устгахын өмнө асуух | код бэлэн | Гүйлгээ, данс, төсөв, ангилал, шошго. `confirmAction`. |
 | Хайлт, шүүлт, эрэмбэ, infinite scroll, pull-to-refresh | код бэлэн | `src/app/(tabs)/transactions.tsx` |
 | Админ самбар | код бэлэн, Бусад цэсэнд | `src/app/admin.tsx` |

@@ -76,7 +76,7 @@ docs/                         # ERD, user flow, дизайн, дэлгэцийн
 
 ## 🗄️ Өгөгдлийн сан (ERD)
 
-Одоогийн бүтэц (шинэ `statement_imports` орсон): [`docs/diagrams/erd.mmd`](docs/diagrams/erd.mmd). Доорх зураг хамгаалалтын эхний хувилбар.
+Одоогийн бүтэц: [`docs/diagrams/erd.mmd`](docs/diagrams/erd.mmd). Доорх зураг энэ эхээс гарсан бөгөөд `statement_imports` орсон.
 
 ![ERD](docs/erd.png)
 
