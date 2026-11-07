@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { PGlite } from '@electric-sql/pglite';
-import { sha256Hex } from '../src/lib/sha256';
+import { sha256Hex, sha256HexBytes } from '../src/lib/sha256';
+import { centsToDb } from '../src/lib/money';
+import { buildSyntheticStatement } from '../src/lib/pdf/syntheticStatement';
+import { buildCommitRows } from '../src/lib/statements/commitRows';
+import { parseStatementFile } from '../src/lib/statements/parseStatement';
+import { Category } from '../src/types/database';
 
 const USER_A = '11111111-1111-4111-8111-111111111111';
 const USER_B = '22222222-2222-4222-8222-222222222222';
@@ -183,5 +188,101 @@ test('import commit is idempotent, isolated, and atomic', async () => {
   `, [atomicAccount]);
   assert.equal(atomicLeft.rows[0].n, '0');
   assert.equal(atomicLeft.rows[0].initial_balance, '0.00');
+  await db.close();
+});
+
+test('synthetic PDF journey: correct, save, report, replay, rollback keeps manual row', async () => {
+  const db = await boot();
+  const categories = (await db.query<Category>(
+    `select id, user_id, name, type, icon, color from public.categories`,
+  )).rows;
+  const food = categories.find((category) => category.name === 'Хоол хүнс' && category.type === 'expense');
+  assert.ok(food);
+
+  const built = buildSyntheticStatement();
+  const parsed = await parseStatementFile(built.bytes);
+  assert.equal(parsed.chainOk, true);
+  const corrected = parsed.rows.map((row) => {
+    if (row.note.includes('Янз бүрийн')) {
+      return { ...row, kind: 'normal' as const, categoryName: 'Хоол хүнс', confidence: 'high' as const };
+    }
+    return row;
+  });
+  assert.equal(corrected.find((row) => row.note.includes('Янз бүрийн'))?.kind, 'normal');
+  const payload = buildCommitRows(corrected, categories);
+  const fileHash = sha256HexBytes(built.bytes);
+
+  const accountId = await asUser(db, USER_A, async () => {
+    const created = await db.query<{ id: string }>(
+      `insert into public.accounts (user_id, name, type, initial_balance) values (auth.uid(), 'Синтетик данс', 'bank', 0) returning id`,
+    );
+    return created.rows[0].id;
+  });
+
+  const saved = await asUser(db, USER_A, () => db.query<{ result: Commit }>(
+    `select public.commit_statement_import($1,'synthetic-khan.pdf',$2,'MNT',$3,$4,$5,$6,'****0019',true,$7::jsonb) as result`,
+    [
+      accountId,
+      fileHash,
+      parsed.periodStart,
+      parsed.periodEnd,
+      centsToDb(parsed.openingCents ?? 0),
+      centsToDb(parsed.closingCents ?? 0),
+      JSON.stringify(payload),
+    ],
+  ).then((res) => res.rows[0].result));
+  assert.equal(saved.already_imported, false);
+  assert.equal(saved.inserted, corrected.filter((row) => !row.excluded).length);
+  assert.equal(saved.applied_opening, true);
+
+  const report = await db.query<{ income: string; expense: string; transfer: string }>(`
+    select
+      coalesce(sum(amount) filter (where type = 'income' and economic_kind = 'normal'), 0)::text as income,
+      coalesce(sum(amount) filter (where type = 'expense' and economic_kind = 'normal'), 0)::text as expense,
+      coalesce(sum(amount) filter (where economic_kind = 'transfer'), 0)::text as transfer
+    from public.transactions where account_id = $1
+  `, [accountId]);
+  const normalExpense = corrected
+    .filter((row) => row.kind === 'normal' && (row.amountCents ?? 0) < 0)
+    .reduce((sum, row) => sum + Math.abs(row.amountCents ?? 0), 0);
+  const normalIncome = corrected
+    .filter((row) => row.kind === 'normal' && (row.amountCents ?? 0) > 0)
+    .reduce((sum, row) => sum + (row.amountCents ?? 0), 0);
+  assert.equal(report.rows[0].expense, centsToDb(normalExpense));
+  assert.equal(report.rows[0].income, centsToDb(normalIncome));
+  assert.equal(report.rows[0].transfer, '200000.00');
+  assert.notEqual(report.rows[0].expense, centsToDb(normalExpense + 20_000_000));
+
+  await asUser(db, USER_A, async () => {
+    await db.query(
+      `insert into public.transactions (user_id, account_id, category_id, type, amount, note, occurred_at, economic_kind)
+       values (auth.uid(), $1, $2, 'expense', 2500, 'гараар бичсэн хоол', '2026-01-20', 'normal')`,
+      [accountId, food.id],
+    );
+  });
+
+  const replay = await asUser(db, USER_A, () => db.query<{ result: Commit }>(
+    `select public.commit_statement_import($1,'synthetic-khan.pdf',$2,'MNT',$3,$4,$5,$6,'****0019',false,$7::jsonb) as result`,
+    [
+      accountId, fileHash, parsed.periodStart, parsed.periodEnd,
+      centsToDb(parsed.openingCents ?? 0), centsToDb(parsed.closingCents ?? 0), JSON.stringify(payload),
+    ],
+  ).then((res) => res.rows[0].result));
+  assert.equal(replay.already_imported, true);
+  assert.equal(replay.inserted, 0);
+
+  const rolled = await asUser(db, USER_A, () => db.query<{ result: { deleted: number } }>(
+    `select public.rollback_statement_import($1) as result`,
+    [saved.import_id],
+  ).then((res) => res.rows[0].result));
+  assert.equal(rolled.deleted, saved.inserted);
+
+  const left = await db.query<{ note: string }>(
+    `select note from public.transactions where account_id = $1 order by note`,
+    [accountId],
+  );
+  assert.deepEqual(left.rows.map((row) => row.note), ['гараар бичсэн хоол']);
+  const hidden = await asUser(db, USER_B, async () => db.query(`select id from public.transactions`));
+  assert.equal(hidden.rows.length, 0);
   await db.close();
 });
