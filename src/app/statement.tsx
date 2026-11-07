@@ -230,13 +230,13 @@ export default function StatementScreen() {
       <Text style={styles.line}>Валют: {parsed.currency} · Данс: {parsed.maskedAccount ?? 'тодорхойгүй'}</Text>
       <Text style={styles.line}>Эхний үлдэгдэл {parsed.openingCents == null ? '—' : formatCents(parsed.openingCents)}</Text>
       <Text style={styles.line}>Эцсийн үлдэгдэл {parsed.closingCents == null ? '—' : formatCents(parsed.closingCents)}</Text>
-      <Text style={styles.line}>Орсон {formatCents(totals.credit)} · Гарсан {formatCents(totals.debit)} · {totals.kept} мөр хадгална</Text>
+      <Text style={styles.line}>Дансанд орсон {formatCents(totals.credit)} · Данснаас гарсан {formatCents(totals.debit)} · {totals.kept} мөр хадгална</Text>
       <Text style={styles.line}>{parsed.chainOk ? 'Үлдэгдэл мөр бүрээр таарсан.' : 'Зарим мөрийн үлдэгдэл зөрүүтэй. Засах эсвэл хасна уу.'}</Text>
       <Text style={styles.line}>{parsed.totalsOk == null ? 'Нийт дүнгийн мөр олдсонгүй.' : parsed.totalsOk ? 'Нийт дүн таарсан.' : 'Нийт дүн зөрүүтэй.'}</Text>
       {parsed.warnings.map((warning) => <Text key={warning} style={styles.warn}>{warning}</Text>)}
       {previewNote ? <Text style={styles.warn}>{previewNote}</Text> : null}
       {errorText && phase === 'review' ? <Text style={styles.warn}>{errorText}</Text> : null}
-      <Text style={styles.hint}>Орлого/зарлага нь мөнгөний чиглэл. Шилжүүлэг, хадгаламж үлдэгдэлд орно, сарын зарлагад орохгүй. Ангилаагүй мөрийг та өөрөө засна.</Text>
+      <Text style={styles.hint}>Дансанд орсон, гарсан мөнгө үлдэгдлийг өөрчилнө. Жинхэнэ орлого, зарлагад зөвхөн «Тайланд орно» гэсэн мөр орно. Ангилаагүй мөрийг дарж засна.</Text>
     </Card>
   ) : null;
 
@@ -277,7 +277,12 @@ export default function StatementScreen() {
           <View style={{ flex: 1 }}>
             <Card>
               <Text style={styles.section}>Данс</Text>
-              {accounts.length === 0 ? <Text style={styles.hint}>Эхлээд Данс табаас данс нэмнэ үү. Хуулга одоохондоо хадгалагдахгүй.</Text> : null}
+              {accounts.length === 0 ? (
+                <View>
+                  <Text style={styles.hint}>Данс байхгүй тул хадгалахгүй. Бусад → Данс хэсгээс нэмнэ үү.</Text>
+                  <Button title="Данс нэмэх" variant="outline" onPress={() => router.push('/account/new')} />
+                </View>
+              ) : null}
               <View style={styles.wrap}>
                 {accounts.map((item) => (
                   <Chip key={item.id} label={item.name} active={accountId === item.id} onPress={() => setAccountId(item.id)} />
@@ -390,8 +395,8 @@ export default function StatementScreen() {
             <Text style={styles.section}>{result.already_imported ? 'Энэ файл аль хэдийн орсон' : 'Хадгаллаа'}</Text>
             <Text style={styles.hint}>Нэмсэн: {result.inserted}. Давхардсан тул алгассан: {result.duplicates}. Хассан: {result.excluded}.</Text>
             <Text style={styles.hint}>{result.applied_opening ? 'Эхний үлдэгдлийг хоосон дансанд тавьсан.' : 'Эхний үлдэгдлийг өөрчлөөгүй.'}</Text>
-            <Button title="Гүйлгээ харах" onPress={() => router.push('/transactions')} />
-            <Button title="Хуулгын түүх" variant="outline" onPress={() => router.push('/statement-history')} style={{ marginTop: 10 }} />
+            <Button title="Тайлан харах" onPress={() => router.push('/home')} />
+            <Button title="Гүйлгээ харах" variant="outline" onPress={() => router.push('/transactions')} style={{ marginTop: 10 }} />
           </Card>
         </View>
       ) : null}

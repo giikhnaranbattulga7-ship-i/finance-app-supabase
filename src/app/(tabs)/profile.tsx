@@ -45,7 +45,7 @@ export default function ProfileScreen() {
   const onLogout = () => confirmAction('Гарах', 'Системээс гарах уу?', () => signOut());
 
   return (
-    <Screen title="Профайл">
+    <Screen title="Бусад">
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -66,9 +66,10 @@ export default function ProfileScreen() {
           <Button title="Хадгалах" variant="outline" onPress={saveName} loading={saving} />
         </Card>
 
-        <MenuRow icon="document-text-outline" label="Хуулга оруулах" href="/statement" />
+        <MenuRow icon="card-outline" label="Данс" href="/(tabs)/accounts" />
+        <MenuRow icon="pie-chart-outline" label="Төсөв" href="/(tabs)/budgets" />
         <MenuRow icon="time-outline" label="Хуулгын түүх" href="/statement-history" />
-        <MenuRow icon="pricetags-outline" label="Ангиллууд" href="/categories" />
+        <MenuRow icon="pricetags-outline" label="Ангилал" href="/categories" />
         <MenuRow icon="bookmark-outline" label="Шошгууд" href="/tags" />
         <MenuRow icon="diamond-outline" label="Premium болох" href="/premium" />
         {role === 'admin' ? <MenuRow icon="shield-checkmark-outline" label="Админ самбар" href="/admin" /> : null}

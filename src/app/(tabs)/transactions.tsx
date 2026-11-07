@@ -96,8 +96,8 @@ export default function TransactionsScreen() {
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <Chip label="Бүгд" active={type === 'all'} onPress={() => { setType('all'); setCategoryId(null); }} />
-          <Chip label="Орлого" active={type === 'income'} color={colors.income} onPress={() => { setType('income'); setCategoryId(null); }} />
-          <Chip label="Зарлага" active={type === 'expense'} color={colors.expense} onPress={() => { setType('expense'); setCategoryId(null); }} />
+          <Chip label="Мөнгө орсон" active={type === 'income'} color={colors.income} onPress={() => { setType('income'); setCategoryId(null); }} />
+          <Chip label="Мөнгө гарсан" active={type === 'expense'} color={colors.expense} onPress={() => { setType('expense'); setCategoryId(null); }} />
           <View style={{ width: 12 }} />
           {SORTS.map((s) => <Chip key={s.key} label={s.label} active={sort === s.key} onPress={() => setSort(s.key)} />)}
         </ScrollView>

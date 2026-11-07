@@ -14,7 +14,7 @@ export type Classification = {
 };
 
 export const KIND_LABEL: Record<EconomicKind, string> = {
-  normal: 'Энгийн',
+  normal: 'Тайланд орно',
   transfer: 'Шилжүүлэг',
   savings: 'Хадгаламж',
   refund: 'Буцаалт',
