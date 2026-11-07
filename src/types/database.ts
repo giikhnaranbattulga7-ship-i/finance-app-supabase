@@ -1,4 +1,7 @@
 // Өгөгдлийн сангийн хүснэгтүүдийн TypeScript төрлүүд (schema.sql-тэй нийцнэ)
+import type { EconomicKind } from '../lib/statements/classify';
+
+export type { EconomicKind };
 export type Role = 'guest' | 'user' | 'admin';
 export type TxType = 'income' | 'expense';
 export type AccountType = 'cash' | 'bank' | 'card' | 'savings';
@@ -55,6 +58,10 @@ export interface Transaction {
   note: string;
   occurred_at: string; // YYYY-MM-DD
   created_at: string;
+  economic_kind?: EconomicKind;
+  import_id?: string | null;
+  posted_time?: string | null;
+  balance_after?: number | string | null;
   // join-оор ирэх өгөгдөл
   category?: Pick<Category, 'id' | 'name' | 'icon' | 'color'> | null;
   account?: Pick<Account, 'id' | 'name'> | null;

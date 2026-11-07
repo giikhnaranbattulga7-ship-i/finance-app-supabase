@@ -6,13 +6,13 @@ import { colors } from '../../lib/theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-// 5 таб: name = файлын нэр
-const tabs: { name: string; title: string; icon: IconName }[] = [
+// Үндсэн 3 таб. Данс, төсөв нь Бусад цэсэнд.
+const tabs: { name: string; title: string; icon: IconName; hidden?: boolean }[] = [
   { name: 'home', title: 'Нүүр', icon: 'home' },
   { name: 'transactions', title: 'Гүйлгээ', icon: 'list' },
-  { name: 'budgets', title: 'Төсөв', icon: 'pie-chart' },
-  { name: 'accounts', title: 'Данс', icon: 'card' },
-  { name: 'profile', title: 'Профайл', icon: 'person' },
+  { name: 'profile', title: 'Бусад', icon: 'menu' },
+  { name: 'budgets', title: 'Төсөв', icon: 'pie-chart', hidden: true },
+  { name: 'accounts', title: 'Данс', icon: 'card', hidden: true },
 ];
 
 export default function TabLayout() {
@@ -32,6 +32,7 @@ export default function TabLayout() {
           name={t.name}
           options={{
             title: t.title,
+            href: t.hidden ? null : undefined,
             tabBarIcon: ({ color, size }) => <Ionicons name={t.icon} size={size} color={color as string} />,
           }}
         />

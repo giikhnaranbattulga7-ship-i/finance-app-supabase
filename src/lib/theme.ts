@@ -4,6 +4,7 @@ export const colors = {
   primarySoft: '#EEF2FF',
   income: '#16A34A',
   expense: '#DC2626',
+  transfer: '#0369A1',
   warning: '#F59E0B',
   bg: '#F3F4F6',
   card: '#FFFFFF',

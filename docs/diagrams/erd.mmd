@@ -6,6 +6,9 @@ erDiagram
   PROFILES ||--o{ BUDGETS : "1:N"
   PROFILES ||--o{ TAGS : "1:N"
   PROFILES ||--o{ PREMIUM_ORDERS : "1:N"
+  PROFILES ||--o{ STATEMENT_IMPORTS : "1:N"
+  ACCOUNTS ||--o{ STATEMENT_IMPORTS : "1:N"
+  STATEMENT_IMPORTS ||--o{ TRANSACTIONS : "1:N багц"
   ACCOUNTS ||--o{ TRANSACTIONS : "1:N"
   CATEGORIES ||--o{ TRANSACTIONS : "1:N"
   CATEGORIES ||--o{ BUDGETS : "1:N"
@@ -37,7 +40,10 @@ erDiagram
     text type
     numeric amount "> 0"
     text note
-    date occurred_at }
+    date occurred_at
+    text economic_kind "normal|transfer|savings|refund|unclassified"
+    uuid import_id FK "null = гараар"
+    text fingerprint_base }
   BUDGETS { uuid id PK
     uuid user_id FK
     uuid category_id FK
@@ -55,3 +61,10 @@ erDiagram
     text status "pending|paid|cancelled"
     text invoice_id
     timestamptz paid_at }
+  STATEMENT_IMPORTS { uuid id PK
+    uuid user_id FK
+    uuid account_id FK
+    text file_sha256
+    text status "committed|rolled_back"
+    numeric opening_balance
+    bool applied_opening }

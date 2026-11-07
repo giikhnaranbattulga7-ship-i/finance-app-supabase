@@ -24,6 +24,8 @@ function RootNavigator() {
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="transaction/[id]" options={{ headerShown: true, title: 'Гүйлгээ' }} />
+        <Stack.Screen name="statement" options={{ headerShown: false }} />
+        <Stack.Screen name="statement-history" options={{ headerShown: false }} />
         <Stack.Screen name="account/[id]" options={{ headerShown: true, title: 'Данс' }} />
         <Stack.Screen name="budget/[id]" options={{ headerShown: true, title: 'Төсөв' }} />
         <Stack.Screen name="categories" options={{ headerShown: true, title: 'Ангиллууд' }} />
