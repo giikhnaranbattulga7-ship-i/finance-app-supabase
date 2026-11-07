@@ -1,5 +1,7 @@
+import { numberToCents } from '../lib/money';
 import { supabase } from '../lib/supabase';
-import { Transaction, TxType } from '../types/database';
+import { EconomicKind, Transaction, TxType } from '../types/database';
+import { friendlyDbError } from './dbError';
 import { currentUserId, unwrap } from './helpers';
 import { setTransactionTags } from './tags';
 
@@ -22,6 +24,7 @@ export type TxInput = {
   note: string;
   occurred_at: string;
   tagIds: string[];
+  economic_kind?: EconomicKind;
 };
 
 // Join: ангилал, данс, шошгуудыг нэг query-гаар авна
@@ -52,15 +55,18 @@ export async function getTransaction(id: string): Promise<Transaction> {
 
 export async function createTransaction({ tagIds, ...input }: TxInput) {
   const user_id = await currentUserId();
-  const tx = unwrap(await supabase.from('transactions').insert({ ...input, user_id }).select().single()) as Transaction;
+  const res = await supabase.from('transactions').insert({ ...input, user_id }).select().single();
+  if (res.error) throw new Error(friendlyDbError(res.error.message));
+  const tx = res.data as Transaction;
   await setTransactionTags(tx.id, tagIds);
   return tx;
 }
 
 export async function updateTransaction(id: string, { tagIds, ...input }: TxInput) {
-  const tx = unwrap(await supabase.from('transactions').update(input).eq('id', id).select().single());
+  const res = await supabase.from('transactions').update(input).eq('id', id).select().single();
+  if (res.error) throw new Error(friendlyDbError(res.error.message));
   await setTransactionTags(id, tagIds);
-  return tx;
+  return res.data;
 }
 
 export async function deleteTransaction(id: string) {
@@ -73,26 +79,57 @@ export async function monthSummary(monthStart: string) {
   const d = new Date(monthStart);
   const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
   const nextISO = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-01`;
-  const rows = unwrap(
-    await supabase
-      .from('transactions')
-      .select('type, amount, category_id, category:categories(name,color)')
-      .gte('occurred_at', monthStart)
-      .lt('occurred_at', nextISO),
-  ) as unknown as { type: TxType; amount: number; category_id: string | null; category: { name: string; color: string } | null }[];
+  const res = await supabase
+    .from('transactions')
+    .select('type, amount, category_id, economic_kind, category:categories(name,color)')
+    .gte('occurred_at', monthStart)
+    .lt('occurred_at', nextISO);
+  if (res.error) throw new Error(friendlyDbError(res.error.message));
+  const rows = (res.data ?? []) as unknown as {
+    type: TxType;
+    amount: number | string;
+    category_id: string | null;
+    economic_kind?: EconomicKind | null;
+    category: { name: string; color: string } | null;
+  }[];
 
-  let income = 0;
-  let expense = 0;
-  const byCategory: Record<string, { name: string; color: string; total: number }> = {};
+  // Зөвхөн economic_kind = normal нь орлого/зарлагын тайланд орно.
+  // Шилжүүлэг, хадгаламж үлдэгдлийг өөрчилдөг ч зарцуулалт биш.
+  let incomeCents = 0;
+  let expenseCents = 0;
+  let transferInCents = 0;
+  let transferOutCents = 0;
+  let savingsInCents = 0;
+  let savingsOutCents = 0;
+  let refundCents = 0;
+  let unclassifiedInCents = 0;
+  let unclassifiedOutCents = 0;
+  const byCategory: Record<string, { name: string; color: string; totalCents: number }> = {};
   for (const r of rows) {
-    const amt = Number(r.amount);
-    if (r.type === 'income') income += amt;
-    else {
-      expense += amt;
-      const key = r.category_id ?? 'none';
-      byCategory[key] ??= { name: r.category?.name ?? 'Ангилалгүй', color: r.category?.color ?? '#9CA3AF', total: 0 };
-      byCategory[key].total += amt;
-    }
+    const cents = Math.abs(numberToCents(r.amount));
+    const kind = r.economic_kind ?? 'normal';
+    const incoming = r.type === 'income';
+    if (kind === 'normal') {
+      if (incoming) incomeCents += cents;
+      else {
+        expenseCents += cents;
+        const key = r.category_id ?? 'none';
+        byCategory[key] ??= { name: r.category?.name ?? 'Ангилалгүй', color: r.category?.color ?? '#9CA3AF', totalCents: 0 };
+        byCategory[key].totalCents += cents;
+      }
+    } else if (kind === 'transfer') {
+      if (incoming) transferInCents += cents;
+      else transferOutCents += cents;
+    } else if (kind === 'savings') {
+      if (incoming) savingsInCents += cents;
+      else savingsOutCents += cents;
+    } else if (kind === 'refund') {
+      refundCents += cents;
+    } else if (incoming) unclassifiedInCents += cents;
+    else unclassifiedOutCents += cents;
   }
-  return { income, expense, byCategory };
+  return {
+    incomeCents, expenseCents, transferInCents, transferOutCents,
+    savingsInCents, savingsOutCents, refundCents, unclassifiedInCents, unclassifiedOutCents, byCategory,
+  };
 }

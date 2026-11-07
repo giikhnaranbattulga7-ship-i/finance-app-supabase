@@ -8,6 +8,7 @@ import { Screen } from '../../components/Screen';
 import { EmptyView, ErrorView, LoadingView } from '../../components/StateViews';
 import { useFocusData } from '../../hooks/useAsync';
 import { formatMoney } from '../../lib/format';
+import { formatCents, numberToCents } from '../../lib/money';
 import { colors } from '../../lib/theme';
 import { monthStartISO } from '../../lib/validation';
 import { listBudgets } from '../../services/budgets';
@@ -22,7 +23,7 @@ export default function BudgetsScreen() {
 
   const { data, loading, error, refreshing, refresh, reload } = useFocusData(async () => {
     const [budgets, summary] = await Promise.all([listBudgets(month), monthSummary(month)]);
-    return budgets.map((b) => ({ ...b, spent: summary.byCategory[b.category_id]?.total ?? 0 }));
+    return budgets.map((b) => ({ ...b, spentCents: summary.byCategory[b.category_id]?.totalCents ?? 0 }));
   }, [month]);
 
   const shift = (n: number) => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + n, 1));
@@ -43,7 +44,8 @@ export default function BudgetsScreen() {
           contentContainerStyle={{ padding: 16, paddingBottom: 100, flexGrow: 1 }}
           ListEmptyComponent={<EmptyView icon="pie-chart-outline" title="Энэ сард төсөв алга" subtitle="+ товчоор ангилал тус бүрт сарын хязгаар тогтооно" />}
           renderItem={({ item }) => {
-            const ratio = item.spent / Number(item.limit_amount);
+            const limitCents = numberToCents(item.limit_amount);
+            const ratio = limitCents > 0 ? item.spentCents / limitCents : 0;
             return (
               <Pressable style={styles.card} onPress={() => router.push(`/budget/${item.id}`)}>
                 <View style={styles.row}>
@@ -52,8 +54,8 @@ export default function BudgetsScreen() {
                 </View>
                 <ProgressBar value={ratio} color={item.category?.color} />
                 <Text style={styles.sub}>
-                  {formatMoney(item.spent)} / {formatMoney(Number(item.limit_amount))}
-                  {ratio > 1 ? '  · Хэтэрсэн!' : `  · Үлдсэн ${formatMoney(Number(item.limit_amount) - item.spent)}`}
+                  {formatCents(item.spentCents)} / {formatMoney(Number(item.limit_amount))}
+                  {ratio > 1 ? '  · Хэтэрсэн!' : `  · Үлдсэн ${formatCents(Math.max(0, limitCents - item.spentCents))}`}
                 </Text>
               </Pressable>
             );

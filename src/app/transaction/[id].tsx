@@ -12,7 +12,8 @@ import { listAccounts } from '../../services/accounts';
 import { listCategories } from '../../services/categories';
 import { listTags } from '../../services/tags';
 import { createTransaction, deleteTransaction, getTransaction, updateTransaction } from '../../services/transactions';
-import { AccountBalance, Category, Tag, TxType } from '../../types/database';
+import { kindLabel } from '../../lib/statements/classify';
+import { AccountBalance, Category, EconomicKind, Tag, TxType } from '../../types/database';
 
 type Errors = { amount?: string | null; date?: string | null; account?: string | null; category?: string | null; note?: string | null };
 
@@ -22,6 +23,7 @@ export default function TransactionForm() {
   const isNew = id === 'new';
 
   const [type, setType] = useState<TxType>('expense');
+  const [kind, setKind] = useState<EconomicKind>('normal');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(todayISO());
@@ -47,6 +49,7 @@ export default function TransactionForm() {
         } else {
           const tx = await getTransaction(id);
           setType(tx.type);
+          setKind(tx.economic_kind ?? 'normal');
           setAmount(String(Number(tx.amount)));
           setNote(tx.note);
           setDate(tx.occurred_at);
@@ -70,7 +73,7 @@ export default function TransactionForm() {
       amount: validateAmount(amount),
       date: validateDate(date),
       account: accountId ? null : 'Данс сонгоно уу',
-      category: categoryId ? null : 'Ангилал сонгоно уу',
+      category: kind === 'normal' && !categoryId ? 'Ангилал сонгоно уу' : null,
       note: note.length > 200 ? 'Тэмдэглэл 200 тэмдэгтээс ихгүй' : null,
     };
     setErrors(e);
@@ -79,6 +82,7 @@ export default function TransactionForm() {
     const input = {
       type, amount: parseAmount(amount), note: note.trim(), occurred_at: date,
       account_id: accountId!, category_id: categoryId, tagIds,
+      economic_kind: kind,
     };
     setSaving(true);
     try {
@@ -128,6 +132,14 @@ export default function TransactionForm() {
         )}
         {errors.account ? <Text style={styles.error}>{errors.account}</Text> : null}
 
+        <Text style={styles.label}>Эдийн засгийн утга</Text>
+        <Text style={styles.hint}>Орлого/зарлага нь мөнгө орсон, гарсан чиглэл. Шилжүүлэг, хадгаламж үлдэгдлийг өөрчилдөг ч сарын зарлагад орохгүй.</Text>
+        <View style={styles.wrap}>
+          {(['normal', 'transfer', 'savings', 'refund', 'unclassified'] as EconomicKind[]).map((item) => (
+            <Chip key={item} label={kindLabel(item)} active={kind === item} onPress={() => setKind(item)} />
+          ))}
+        </View>
+
         <Text style={styles.label}>Ангилал</Text>
         <View style={styles.wrap}>
           {visibleCats.map((c) => (
@@ -158,4 +170,5 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, color: colors.muted, marginBottom: 6, fontWeight: '500' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
   error: { color: colors.expense, fontSize: 12, marginBottom: 10 },
+  hint: { color: colors.muted, fontSize: 13, marginBottom: 8 },
 });

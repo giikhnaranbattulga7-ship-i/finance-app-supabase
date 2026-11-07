@@ -36,6 +36,7 @@ React Native (Expo) + TypeScript + Expo Router + Supabase ашигласан, х
 - ✅ **Админ самбар** — статистик, сараар бүртгэлийн график, захиалгын жагсаалт
 - ✅ **UI төлөвүүд** — ачаалж буй, хоосон, алдаа, интернэт тасарсан (NetInfo)
 - ✅ **Premium захиалга** (`premium_orders`, pending → paid trigger) — Хамгаалалт-2-т QPay/Stripe webhook холбогдоно
+- ✅ **Хаан банкны хуулга** — PDF-ийг төхөөрөмж дээр уншиж, шалгаад, хэрэглэгч хадгалахыг дарсны дараа л оруулна. Давхардлыг сангийн түвшинд алгасна. Шилжүүлэг/хадгаламж/буцаалт зарлагаас тусдаа.
 
 ## 🧱 Технологи
 
@@ -44,7 +45,7 @@ React Native (Expo) + TypeScript + Expo Router + Supabase ашигласан, х
 | Frontend | React Native 0.88, Expo SDK 58, TypeScript, Expo Router (Stack + Tabs) |
 | Backend | Supabase (Auth, PostgreSQL, RLS, View, Trigger) |
 | Аюулгүй байдал | expo-secure-store, RLS, `.env` (зөвхөн anon key) |
-| Бусад | @react-native-community/netinfo, @expo/vector-icons |
+| Бусад | @react-native-community/netinfo, @expo/vector-icons, fflate (локал PDF), expo-document-picker, expo-file-system |
 
 ## 🗂️ Кодын бүтэц
 
@@ -87,17 +88,21 @@ docs/                         # ERD, user flow, дизайн, дэлгэцийн
 | `tags` | Хэрэглэгчийн шошго | profiles 1:N |
 | `transaction_tags` | Гүйлгээ ↔ шошго, composite PK | **N:M** |
 | `premium_orders` | Premium захиалга (pending/paid/cancelled) | profiles 1:N |
-| `account_balances` (view) | Үлдэгдэл = эхний үлдэгдэл + орлого − зарлага, `security_invoker` | — |
+| `statement_imports` | Хуулгын багц (committed/rolled_back), файлын SHA-256 | profiles 1:N, accounts 1:N |
+| `account_balances` (view) | Үлдэгдэл = эхний үлдэгдэл + орлого − зарлага, `security_invoker`. Шилжүүлэг ч үлдэгдэлд орно | — |
 
 ### RLS (Row Level Security)
 
-- Бүх 8 хүснэгтэд `enable row level security`.
+- Бүх 9 хүснэгтэд `enable row level security`.
 - Хэрэглэгч зөвхөн `user_id = auth.uid()` мөрөө харж/өөрчилнө.
 - `transactions` insert/update хийхэд **данс нь өөрийнх эсэхийг** `exists(...)`-ээр шалгана.
 - `transaction_tags` — гүйлгээ ба шошго хоёулаа өөрийнх байх ёстой.
 - `categories` — үндсэн ангиллыг зочин (anon) ч уншина, зөвхөн өөрийнхөө ангиллыг засна.
 - `premium_orders` — хэрэглэгч зөвхөн `pending` үүсгэнэ, төлөвийг зөвхөн админ/webhook өөрчилнө.
 - `is_admin()` — `SECURITY DEFINER` тул profiles-ийн RLS-ийг тойрч уншина → policy дотор recursion үүсэхгүй.
+- `statement_imports` — хэрэглэгч зөвхөн өөрийн багцаа харна. Төлөвийг шууд update хийхгүй, `rollback_statement_import` л `rolled_back` болгоно.
+- `transactions.import_id` — гараар оруулсан мөрөнд null. Буцаахад зөвхөн тухайн багцын мөрүүд устана.
+- `commit_statement_import` / `preview_statement_duplicates` / `rollback_statement_import` нь `security invoker`. `service_role` ашиглахгүй.
 - `protect_profile_fields` trigger — хэрэглэгч өөрийгөө admin/premium болгож чадахгүй.
 
 ## 🔁 Хэрэглэгчийн урсгал
@@ -154,8 +159,16 @@ npx expo start          # Expo Go апп-аар QR код уншуулна
 
 ```bash
 npm run typecheck      # TypeScript
+npm test               # синтетик PDF, ангилал, мөнгө, давхардал
+npm run test:import-db # PGlite: RLS, atomic commit, rollback, давхардал
 npm run build:web      # expo export -p web
 TEST_A_EMAIL=... TEST_B_EMAIL=... TEST_ADMIN_EMAIL=... TEST_PASSWORD=... npm run test:rls
+```
+
+Бодит хуулгыг репод бүү оруул. Локал шалгалт (зөвхөн тоо, нэр/дүн хэвлэхгүй):
+
+```bash
+node --import tsx scripts/validate-private-statement.ts /path/outside-the-repo/statement.pdf
 ```
 
 ## 🔐 Аюулгүй байдал
@@ -163,6 +176,23 @@ TEST_A_EMAIL=... TEST_B_EMAIL=... TEST_ADMIN_EMAIL=... TEST_PASSWORD=... npm run
 - `.env` нь `.gitignore`-д орсон; апп-д **зөвхөн anon (нийтийн) түлхүүр** `EXPO_PUBLIC_` хувьсагчаар орно.
 - `service_role` түлхүүр апп-ын кодонд **хэзээ ч байхгүй** — апп-ыг задалж уншиж болох тул.
 - Хамгаалалт нь клиент дээр биш, **өгөгдлийн сангийн RLS** дээр хийгдэнэ.
+
+## Хуулга оруулах
+
+Дэмжинэ: **Хаан банкны текст PDF** (олон хуудас, мөр дамжсан утга, орлого/зарлага, 2 орны дүн). Файл 8 МБ, 25 хуудас, 2500 мөрөөс хэтрэхгүй.
+
+Дэмжихгүй: нууц үгтэй PDF, сканнер/зураг, Excel, бусад банк. Бүх PDF-ийг уншина гэж үзэхгүй.
+
+Урсгал: файл сонгох → төхөөрөмж дээр задлах → мөр бүрийг засах/хасах → **Хадгалах** дарсны дараа л Supabase. Давхардсан мөрийг `fingerprint` + `occ` unique index алгасна. Ижил цаг, ижил дүн, өөр үлдэгдэлтэй хоёр худалдан авалт хоёулаа үлдэнэ. Эхний үлдэгдлийг данс хоосон, одоогийн үлдэгдэл 0 үед л тавина.
+
+Тайлбар: [`docs/huulga-tailbar.md`](docs/huulga-tailbar.md). Дизайн: [`docs/statement-import-design.md`](docs/statement-import-design.md).
+
+### Production руу гаргахын өмнө (одоогоор хийгээгүй)
+
+1. Supabase SQL Editor дээр `supabase/migrations/20261107_statement_import.sql`-ийг нэг удаа ажиллуулна. Хүснэгт устгахгүй, багана нэмнэ.
+2. `service_role` түлхүүрийг клиентэд бүү тавь. Энэ өөрчлөлт Edge Function шаардахгүй.
+3. Дараа нь web deploy. Миграци хийхээс өмнө deploy хийвэл хуулга болон тайлан `economic_kind` баганаас болж алдаа заана.
+4. Бодит хуулга, түүний текст, нэр, данс, дүн, screenshot-ыг git-д бүү оруул.
 
 ## 🗺️ Хамгаалалт-2 төлөвлөгөө
 

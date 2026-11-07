@@ -1,12 +1,16 @@
-// Тоог мянгатын тусгаарлагчтай ₮ болгох. Жишээ: 1500000 -> "1,500,000₮"
-export function formatMoney(amount: number): string {
-  // toString -> regex-ээр 3 оронтой бүлэг бүрийн өмнө таслал тавина
-  const text = Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return text + '₮';
+import { formatCents, numberToCents } from './money';
+
+// Тоог мянгатын тусгаарлагчтай ₮ болгох. Бутархайг 2 орноор хадгална.
+export function formatMoney(amount: number | string): string {
+  const cents = numberToCents(amount);
+  if (!Number.isFinite(cents)) return '—';
+  return formatCents(cents);
 }
 
-// ISO огноог "2026.11.02" хэлбэрт оруулах
+// ISO огноог "2026.11.02" хэлбэрт оруулах. YYYY-MM-DD-г timezone-оор хөдөлгөхгүй.
 export function formatDate(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (match) return `${match[1]}.${match[2]}.${match[3]}`;
   const d = new Date(iso);
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');

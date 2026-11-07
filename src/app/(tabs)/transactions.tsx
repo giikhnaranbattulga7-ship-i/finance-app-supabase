@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Chip } from '../../components/Chip';
 import { Fab } from '../../components/Fab';
 import { Screen } from '../../components/Screen';
@@ -78,7 +78,14 @@ export default function TransactionsScreen() {
   const visibleCats = categories.filter((c) => type === 'all' || c.type === type);
 
   return (
-    <Screen title="Гүйлгээ">
+    <Screen
+      title="Гүйлгээ"
+      right={(
+        <Pressable accessibilityRole="button" accessibilityLabel="Хуулга оруулах" onPress={() => router.push('/statement')} hitSlop={8}>
+          <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 15 }}>Хуулга</Text>
+        </Pressable>
+      )}
+    >
       <View style={styles.filters}>
         <TextInput
           value={search}

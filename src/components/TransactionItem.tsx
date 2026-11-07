@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDate, formatMoney } from '../lib/format';
+import { kindLabel } from '../lib/statements/classify';
 import { colors } from '../lib/theme';
 import { Transaction } from '../types/database';
 
@@ -10,17 +11,19 @@ type Props = { tx: Transaction; onPress?: () => void };
 // Гүйлгээний нэг мөр. memo → props өөрчлөгдөөгүй бол дахин render хийхгүй (урт жагсаалтад хурдан)
 function TransactionItemBase({ tx, onPress }: Props) {
   const isIncome = tx.type === 'income';
-  const color = tx.category?.color ?? colors.muted;
+  const kind = tx.economic_kind ?? 'normal';
+  const color = kind === 'normal' ? (tx.category?.color ?? colors.muted) : colors.transfer;
   const tags = tx.transaction_tags?.map((t) => t.tag.name) ?? [];
+  const title = kind === 'normal' ? (tx.category?.name ?? 'Ангилалгүй') : kindLabel(kind);
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
       <View style={[styles.icon, { backgroundColor: color + '22' }]}>
         <Ionicons name={(tx.category?.icon ?? 'pricetag') as never} size={20} color={color} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.title} numberOfLines={1}>{tx.category?.name ?? 'Ангилалгүй'}</Text>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
         <Text style={styles.sub} numberOfLines={1}>
-          {formatDate(tx.occurred_at)} · {tx.account?.name ?? ''}{tx.note ? ` · ${tx.note}` : ''}
+          {formatDate(tx.occurred_at)}{tx.posted_time ? ` ${tx.posted_time}` : ''} · {tx.account?.name ?? ''}{tx.note ? ` · ${tx.note}` : ''}
         </Text>
         {tags.length ? <Text style={styles.tags} numberOfLines={1}>#{tags.join(' #')}</Text> : null}
       </View>

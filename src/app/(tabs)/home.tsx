@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card } from '../../components/Card';
 import { Fab } from '../../components/Fab';
 import { Screen } from '../../components/Screen';
@@ -8,6 +8,7 @@ import { TransactionItem } from '../../components/TransactionItem';
 import { useAuth } from '../../context/AuthContext';
 import { useFocusData } from '../../hooks/useAsync';
 import { formatMoney } from '../../lib/format';
+import { formatCents } from '../../lib/money';
 import { colors } from '../../lib/theme';
 import { monthStartISO } from '../../lib/validation';
 import { listAccounts } from '../../services/accounts';
@@ -30,8 +31,9 @@ export default function HomeScreen() {
   if (!data) return null;
 
   const total = data.accounts.reduce((s, a) => s + Number(a.balance), 0);
-  const cats = Object.values(data.summary.byCategory).sort((a, b) => b.total - a.total).slice(0, 5);
-  const max = cats[0]?.total ?? 1;
+  const cats = Object.values(data.summary.byCategory).sort((a, b) => b.totalCents - a.totalCents).slice(0, 5);
+  const max = cats[0]?.totalCents ?? 1;
+  const side = data.summary;
 
   return (
     <Screen title={`Сайн уу, ${profile?.full_name || 'хэрэглэгч'} 👋`}>
@@ -42,11 +44,11 @@ export default function HomeScreen() {
           <View style={styles.heroRow}>
             <View>
               <Text style={styles.heroLabel}>Энэ сарын орлого</Text>
-              <Text style={styles.heroSmall}>+{formatMoney(data.summary.income)}</Text>
+              <Text style={styles.heroSmall}>+{formatCents(side.incomeCents)}</Text>
             </View>
             <View>
               <Text style={styles.heroLabel}>Энэ сарын зарлага</Text>
-              <Text style={styles.heroSmall}>-{formatMoney(data.summary.expense)}</Text>
+              <Text style={styles.heroSmall}>-{formatCents(side.expenseCents)}</Text>
             </View>
           </View>
         </View>
@@ -65,13 +67,25 @@ export default function HomeScreen() {
             <View key={c.name} style={{ marginBottom: 10 }}>
               <View style={styles.barLabel}>
                 <Text style={{ color: colors.text }}>{c.name}</Text>
-                <Text style={{ color: colors.muted }}>{formatMoney(c.total)}</Text>
+                <Text style={{ color: colors.muted }}>{formatCents(c.totalCents)}</Text>
               </View>
               <View style={styles.track}>
-                <View style={{ width: `${(c.total / max) * 100}%`, height: '100%', backgroundColor: c.color, borderRadius: 999 }} />
+                <View style={{ width: `${(c.totalCents / max) * 100}%`, height: '100%', backgroundColor: c.color, borderRadius: 999 }} />
               </View>
             </View>
           ))}
+        </Card>
+
+        <Card>
+          <Text style={styles.section}>Үлдэгдэлд орно, зарлагад орохгүй</Text>
+          <Text style={styles.note}>Шилжүүлэг, хадгаламж, буцаалт, ангилаагүй мөр нь дээрх орлого/зарлагад орохгүй. Үлдэгдэл дээр мөнгө орсон, гарсан хэвээр тооцогдоно.</Text>
+          {side.transferInCents || side.transferOutCents ? <Text style={styles.note}>Шилжүүлэг орсон {formatCents(side.transferInCents)} · гарсан {formatCents(side.transferOutCents)}</Text> : null}
+          {side.savingsInCents || side.savingsOutCents ? <Text style={styles.note}>Хадгаламж орсон {formatCents(side.savingsInCents)} · гарсан {formatCents(side.savingsOutCents)}</Text> : null}
+          {side.refundCents ? <Text style={styles.note}>Буцаалт {formatCents(side.refundCents)}</Text> : null}
+          {side.unclassifiedInCents || side.unclassifiedOutCents ? <Text style={styles.note}>Ангилаагүй орсон {formatCents(side.unclassifiedInCents)} · гарсан {formatCents(side.unclassifiedOutCents)}</Text> : null}
+          <Pressable accessibilityRole="button" accessibilityLabel="Хуулга оруулах" onPress={() => router.push('/statement')} style={{ marginTop: 8 }}>
+            <Text style={{ color: colors.primary, fontWeight: '700' }}>Хуулга оруулах</Text>
+          </Pressable>
         </Card>
 
         <Text style={[styles.section, { marginTop: 8 }]}>Сүүлийн гүйлгээ</Text>
@@ -93,6 +107,7 @@ const styles = StyleSheet.create({
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
   heroSmall: { color: '#fff', fontSize: 16, fontWeight: '700', marginTop: 2 },
   section: { fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  note: { color: colors.muted, fontSize: 13, marginBottom: 4 },
   barLabel: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
   track: { height: 8, backgroundColor: colors.border, borderRadius: 999, overflow: 'hidden' },
 });

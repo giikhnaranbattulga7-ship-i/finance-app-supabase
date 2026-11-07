@@ -66,6 +66,8 @@ export default function ProfileScreen() {
           <Button title="Хадгалах" variant="outline" onPress={saveName} loading={saving} />
         </Card>
 
+        <MenuRow icon="document-text-outline" label="Хуулга оруулах" href="/statement" />
+        <MenuRow icon="time-outline" label="Хуулгын түүх" href="/statement-history" />
         <MenuRow icon="pricetags-outline" label="Ангиллууд" href="/categories" />
         <MenuRow icon="bookmark-outline" label="Шошгууд" href="/tags" />
         <MenuRow icon="diamond-outline" label="Premium болох" href="/premium" />
