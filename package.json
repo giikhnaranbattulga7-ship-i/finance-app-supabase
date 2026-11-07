@@ -40,7 +40,7 @@
     "typecheck": "tsc --noEmit",
     "build:web": "expo export -p web",
     "test": "node --import tsx --test src/lib/statements/statement.test.ts",
-    "test:import-db": "node --import tsx --test scripts/import-db.test.ts",
+    "test:import-db": "node --import tsx --test scripts/import-db.test.ts scripts/migration-compat.test.ts",
     "test:rls": "node scripts/rls-test.mjs"
   },
   "private": true

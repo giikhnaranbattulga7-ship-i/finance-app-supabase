@@ -44,7 +44,9 @@
 
 Файл: `supabase/migrations/20261107_statement_import.sql`.
 
-- `DROP TABLE`, `TRUNCATE`, өгөгдөл цэвэрлэх команд байхгүй.
+- `DROP TABLE`, `TRUNCATE`, хуучин гүйлгээг `update` хийх команд байхгүй. `economic_kind` нь баганын default.
+- Одоо байгаа `transactions owner all` policy-г устгахгүй. Шинэ policy нь `restrictive`.
+- CSV-д constraint, policy текст, функц байхгүй. Эхлээд `supabase/preflight_statement_import.sql` ажиллуулна. `blocker` гарвал миграцийг бүү ажиллуул.
 - Шинэ хүснэгт `create table if not exists`. Багана `add column if not exists`.
 - `delete from transactions` зөвхөн `rollback_statement_import` дотор, `import_id` болон `user_id = auth.uid()` шүүлттэй. Гараар оруулсан мөр (`import_id` null) устахгүй.
 - `commit_statement_import`, `preview_statement_duplicates`, `rollback_statement_import` нь `security invoker`. `auth.uid()`-аар эзнээ авна. Клиент `user_id` явуулж эрх ахиулахгүй.

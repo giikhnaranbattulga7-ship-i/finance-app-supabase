@@ -267,7 +267,98 @@ create trigger premium_orders_paid after update on public.premium_orders
 -- Шинэ төсөл: schema.sql энэ файлын агуулгыг төгсгөлдөө агуулна.
 -- Хуучин төсөл: зөвхөн энэ файлыг SQL Editor дээр нэг удаа ажиллуулна.
 -- service_role түлхүүр шаардахгүй. Функцүүд security invoker.
+-- Хуучин мөрийг update хийхгүй. transactions owner policy-г устгахгүй.
+-- Нэг бүтэн гүйлгээ. Аль нэг шалгалт унавал бүхэлдээ буцна.
 -- =====================================================================
+
+begin;
+
+do $$
+declare
+  v_long int;
+  v_open int;
+begin
+  if to_regprocedure('public.is_admin()') is null then
+    raise exception 'prerequisite: public.is_admin() байхгүй';
+  end if;
+  if to_regprocedure('auth.uid()') is null then
+    raise exception 'prerequisite: auth.uid() байхгүй';
+  end if;
+  if (
+    select count(*) from pg_class rel
+    join pg_namespace nsp on nsp.oid = rel.relnamespace
+    where nsp.nspname = 'public' and rel.relkind = 'r'
+      and rel.relname in ('profiles','accounts','categories','transactions','budgets','tags','transaction_tags','premium_orders')
+  ) <> 8 then
+    raise exception 'prerequisite: 8 суурь хүснэгт бүрэн биш';
+  end if;
+  if (
+    select c.data_type from information_schema.columns c
+    where c.table_schema = 'public' and c.table_name = 'transactions' and c.column_name = 'occurred_at'
+  ) is distinct from 'date' then
+    raise exception 'prerequisite: transactions.occurred_at date байх ёстой';
+  end if;
+  if (
+    select count(*) from information_schema.columns c
+    where c.table_schema = 'public' and c.table_name = 'transactions'
+      and c.column_name in ('id','user_id','account_id','category_id','type','amount','note','occurred_at','created_at')
+      and (
+        (c.column_name = 'occurred_at' and c.data_type = 'date')
+        or (c.column_name = 'created_at' and c.data_type = 'timestamp with time zone')
+        or (c.column_name in ('amount') and c.data_type = 'numeric')
+        or (c.column_name in ('id','user_id','account_id','category_id') and c.data_type = 'uuid')
+        or (c.column_name in ('type','note') and c.data_type = 'text')
+      )
+  ) <> 9 then
+    raise exception 'prerequisite: transactions-ийн суурь багана таарахгүй';
+  end if;
+  if not exists (
+    select 1 from information_schema.columns c
+    where c.table_schema = 'public' and c.table_name = 'accounts'
+      and c.column_name = 'initial_balance' and c.data_type = 'numeric'
+  ) then
+    raise exception 'prerequisite: accounts.initial_balance numeric байх ёстой';
+  end if;
+  if exists (
+    select 1 from pg_class rel
+    join pg_namespace nsp on nsp.oid = rel.relnamespace
+    where nsp.nspname = 'public' and rel.relname = 'account_balances' and rel.relkind <> 'v'
+  ) then
+    raise exception 'prerequisite: account_balances view биш байна';
+  end if;
+  if exists (
+    select 1 from pg_class rel
+    join pg_namespace nsp on nsp.oid = rel.relnamespace
+    where nsp.nspname = 'public'
+      and rel.relname in ('profiles','accounts','categories','transactions','budgets','tags','transaction_tags','premium_orders')
+      and rel.relrowsecurity is not true
+  ) then
+    raise exception 'prerequisite: суурь хүснэгтийн RLS унтраалттай байна';
+  end if;
+  select count(*) into v_long from public.transactions where char_length(note) > 500;
+  if v_long > 0 then
+    raise exception 'prerequisite: % гүйлгээний тэмдэглэл 500 тэмдэгтээс урт', v_long;
+  end if;
+  select count(*) into v_open
+  from pg_policy p
+  where p.polrelid = 'public.transactions'::regclass
+    and p.polpermissive
+    and coalesce(pg_get_expr(p.polqual, p.polrelid), '') not like '%user_id = auth.uid()%'
+    and coalesce(pg_get_expr(p.polqual, p.polrelid), '') not like '%is_admin()%';
+  if v_open > 0 then
+    raise exception 'prerequisite: transactions дээр user_id-г үл хаасан policy байна';
+  end if;
+  select count(*) into v_open
+  from pg_policy p
+  where p.polrelid = 'public.transactions'::regclass
+    and p.polpermissive
+    and p.polcmd in ('*', 'a', 'w')
+    and coalesce(pg_get_expr(p.polwithcheck, p.polrelid), pg_get_expr(p.polqual, p.polrelid), '') not like '%user_id = auth.uid()%'
+    and coalesce(pg_get_expr(p.polwithcheck, p.polrelid), pg_get_expr(p.polqual, p.polrelid), '') not like '%is_admin()%';
+  if v_open > 0 then
+    raise exception 'prerequisite: transactions бичих policy user_id-г үл хаана';
+  end if;
+end $$;
 
 create table if not exists public.statement_imports (
   id uuid primary key default gen_random_uuid(),
@@ -299,15 +390,20 @@ create unique index if not exists statement_imports_active_file
 create index if not exists statement_imports_user_created
   on public.statement_imports (user_id, created_at desc);
 
-alter table public.transactions add column if not exists economic_kind text;
+alter table public.transactions add column if not exists economic_kind text default 'normal';
 alter table public.transactions add column if not exists import_id uuid;
 alter table public.transactions add column if not exists posted_time text;
 alter table public.transactions add column if not exists balance_after numeric(14,2);
 alter table public.transactions add column if not exists fingerprint_base text;
 alter table public.transactions add column if not exists fingerprint_occ integer;
 
-update public.transactions set economic_kind = 'normal' where economic_kind is null;
 alter table public.transactions alter column economic_kind set default 'normal';
+do $$
+begin
+  if exists (select 1 from public.transactions where economic_kind is null) then
+    raise exception 'prerequisite: economic_kind хоосон мөр байна, хуучин мөрийг update хийхгүй';
+  end if;
+end $$;
 alter table public.transactions alter column economic_kind set not null;
 
 alter table public.transactions drop constraint if exists transactions_economic_kind_check;
@@ -326,22 +422,30 @@ alter table public.transactions add constraint transactions_fingerprint_pair_che
   );
 
 do $$
-declare cname text;
+declare
+  v_odd int;
 begin
-  for cname in
-    select con.conname
+  select count(*) into v_odd
+  from pg_constraint con
+  join pg_class rel on rel.oid = con.conrelid
+  join pg_namespace nsp on nsp.oid = rel.relnamespace
+  where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
+    and pg_get_constraintdef(con.oid) ilike '%note%'
+    and pg_get_constraintdef(con.oid) not ilike '%char_length(note) <= 500%';
+  if v_odd > 0 then
+    raise exception 'prerequisite: transactions.note дээр өөр check байна';
+  end if;
+  if not exists (
+    select 1
     from pg_constraint con
     join pg_class rel on rel.oid = con.conrelid
     join pg_namespace nsp on nsp.oid = rel.relnamespace
     where nsp.nspname = 'public' and rel.relname = 'transactions' and con.contype = 'c'
-      and pg_get_constraintdef(con.oid) ilike '%char_length(note)%'
-  loop
-    execute format('alter table public.transactions drop constraint %I', cname);
-  end loop;
+      and pg_get_constraintdef(con.oid) ilike '%char_length(note) <= 500%'
+  ) then
+    alter table public.transactions add constraint transactions_note_len check (char_length(note) <= 500);
+  end if;
 end $$;
-
-alter table public.transactions drop constraint if exists transactions_note_len;
-alter table public.transactions add constraint transactions_note_len check (char_length(note) <= 500);
 
 do $$ begin
   if not exists (select 1 from pg_constraint where conname = 'transactions_import_id_fkey') then
@@ -770,20 +874,25 @@ create policy "imports update own" on public.statement_imports
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
--- Гүйлгээний policy: өөрийн данс, өөрийн хуулга. Manual мөр import_id null.
-drop policy if exists "transactions owner all" on public.transactions;
-create policy "transactions owner all" on public.transactions
+-- Хуучин transactions policy-г хэвээр үлдээнэ. Шинэ restrictive policy зөвхөн нэмж чангална.
+drop policy if exists "transactions import owner" on public.transactions;
+create policy "transactions import owner" on public.transactions
+  as restrictive
   for all to authenticated
-  using (user_id = auth.uid())
+  using (
+    import_id is null
+    or public.is_admin()
+    or exists (
+      select 1 from public.statement_imports i
+      where i.id = import_id and i.user_id = auth.uid() and i.account_id = account_id
+    )
+  )
   with check (
-    user_id = auth.uid()
-    and exists (select 1 from public.accounts a where a.id = account_id and a.user_id = auth.uid())
-    and (
-      import_id is null
-      or exists (
-        select 1 from public.statement_imports i
-        where i.id = import_id and i.user_id = auth.uid() and i.account_id = account_id
-      )
+    import_id is null
+    or public.is_admin()
+    or exists (
+      select 1 from public.statement_imports i
+      where i.id = import_id and i.user_id = auth.uid() and i.account_id = account_id
     )
   );
 
@@ -797,3 +906,5 @@ grant execute on function public.statement_fingerprint(date, text, text, bigint,
 grant execute on function public.commit_statement_import(uuid, text, text, text, date, date, text, text, text, boolean, jsonb) to authenticated;
 grant execute on function public.preview_statement_duplicates(uuid, jsonb) to authenticated;
 grant execute on function public.rollback_statement_import(uuid) to authenticated;
+
+commit;
