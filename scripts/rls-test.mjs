@@ -5,6 +5,10 @@ import fs from 'node:fs';
 
 const env = Object.fromEntries(fs.readFileSync('.env', 'utf8').split('\n').filter(Boolean).map((l) => l.split(/=(.*)/s).slice(0, 2)));
 const URL = env.EXPO_PUBLIC_SUPABASE_URL, KEY = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+if ((URL ?? '').includes('rahymsygjwytwludoucq')) {
+  console.error('rls-test.mjs энэ амьд төсөл рүү бичихгүй.');
+  process.exit(1);
+}
 const A = { email: process.env.TEST_A_EMAIL, password: process.env.TEST_PASSWORD };
 const B = { email: process.env.TEST_B_EMAIL, password: process.env.TEST_PASSWORD };
 const ADMIN = { email: process.env.TEST_ADMIN_EMAIL, password: process.env.TEST_PASSWORD };
