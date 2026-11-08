@@ -28,7 +28,7 @@ export function EmptyView({ title, subtitle, icon = 'file-tray-outline' }: {
 export function ErrorView({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <View style={styles.center}>
-      <Ionicons name="alert-circle-outline" size={48} color={colors.expense} />
+      <Ionicons name="alert-circle-outline" size={48} color={colors.text} />
       <Text style={styles.title}>Алдаа гарлаа</Text>
       <Text style={styles.muted}>{message}</Text>
       {onRetry ? <Button title="Дахин оролдох" variant="outline" onPress={onRetry} style={{ marginTop: 12 }} /> : null}

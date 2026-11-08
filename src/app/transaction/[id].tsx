@@ -7,7 +7,7 @@ import { Input } from '../../components/Input';
 import { ErrorView, LoadingView } from '../../components/StateViews';
 import { confirmAction, showMessage } from '../../lib/confirm';
 import { colors } from '../../lib/theme';
-import { parseAmount, todayISO, validateAmount, validateDate } from '../../lib/validation';
+import { moneyToStore, todayISO, validateAmount, validateDate } from '../../lib/validation';
 import { listAccounts } from '../../services/accounts';
 import { listCategories } from '../../services/categories';
 import { listTags } from '../../services/tags';
@@ -41,9 +41,11 @@ export default function TransactionForm() {
     (async () => {
       try {
         const [acc, cats, tg] = await Promise.all([listAccounts(), listCategories(), listTags()]);
-        setAccounts(acc); setCategories(cats); setTags(tg);
+        setCategories(cats); setTags(tg);
+        const ordered = [...acc].sort((a, b) => a.name.localeCompare(b.name, 'mn'));
+        setAccounts(ordered);
         if (isNew) {
-          setAccountId(acc[0]?.id ?? null);
+          setAccountId(ordered[0]?.id ?? null);
         } else {
           const tx = await getTransaction(id);
           setType(tx.type);
@@ -77,7 +79,7 @@ export default function TransactionForm() {
     if (Object.values(e).some(Boolean)) return;
 
     const input = {
-      type, amount: parseAmount(amount), note: note.trim(), occurred_at: date,
+      type, amount: moneyToStore(amount), note: note.trim(), occurred_at: date,
       account_id: accountId!, category_id: categoryId, tagIds,
     };
     setSaving(true);
@@ -120,10 +122,10 @@ export default function TransactionForm() {
 
         <Text style={styles.label}>Данс</Text>
         {accounts.length === 0 ? (
-          <Text style={styles.error}>Данс алга. Эхлээд «Данс» табаас данс нэмнэ үү.</Text>
+          <Text style={styles.error}>Данс алга. Профайл → Данс хэсгээс нэмнэ үү.</Text>
         ) : (
           <View style={styles.wrap}>
-            {accounts.map((a) => <Chip key={a.id} label={a.name} active={accountId === a.id} onPress={() => setAccountId(a.id)} />)}
+            {accounts.map((a) => <Chip key={a.id} label={`${a.name} · ${a.currency}`} active={accountId === a.id} onPress={() => setAccountId(a.id)} />)}
           </View>
         )}
         {errors.account ? <Text style={styles.error}>{errors.account}</Text> : null}
@@ -157,5 +159,5 @@ const styles = StyleSheet.create({
   segment: { flexDirection: 'row', marginBottom: 12 },
   label: { fontSize: 13, color: colors.muted, marginBottom: 6, fontWeight: '500' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
-  error: { color: colors.expense, fontSize: 12, marginBottom: 10 },
+  error: { color: colors.text, fontSize: 12, marginBottom: 10 },
 });

@@ -24,6 +24,6 @@ export function OfflineBanner() {
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: colors.expense, paddingVertical: 6, alignItems: 'center' },
-  text: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  bar: { backgroundColor: colors.card, paddingVertical: 6, alignItems: 'center' },
+  text: { color: colors.text, fontSize: 13, fontWeight: '600' },
 });

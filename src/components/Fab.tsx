@@ -6,7 +6,7 @@ import { colors } from '../lib/theme';
 export function Fab({ onPress }: { onPress: () => void }) {
   return (
     <Pressable accessibilityLabel="Нэмэх" onPress={onPress} style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}>
-      <Ionicons name="add" size={30} color="#fff" />
+      <Ionicons name="add" size={30} color={colors.onAccent} />
     </Pressable>
   );
 }

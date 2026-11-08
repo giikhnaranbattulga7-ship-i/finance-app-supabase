@@ -5,7 +5,7 @@ import { Fab } from '../../components/Fab';
 import { Screen } from '../../components/Screen';
 import { EmptyView, ErrorView, LoadingView } from '../../components/StateViews';
 import { useFocusData } from '../../hooks/useAsync';
-import { formatMoney } from '../../lib/format';
+import { formatAmount, sumByCurrency } from '../../lib/finance';
 import { ACCOUNT_TYPES, accountTypeLabel } from '../../lib/labels';
 import { colors } from '../../lib/theme';
 import { listAccounts } from '../../services/accounts';
@@ -15,7 +15,7 @@ export default function AccountsScreen() {
 
   if (loading && !data) return <LoadingView />;
   if (error) return <ErrorView message={error} onRetry={() => reload()} />;
-  const total = (data ?? []).reduce((s, a) => s + Number(a.balance), 0);
+  const totals = sumByCurrency((data ?? []).map((account) => ({ currency: account.currency, amount: Number(account.balance) })));
 
   return (
     <Screen title="Данснууд">
@@ -27,8 +27,10 @@ export default function AccountsScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 100, flexGrow: 1 }}
         ListHeaderComponent={
           <View style={styles.total}>
-            <Text style={{ color: colors.muted }}>Нийт</Text>
-            <Text style={styles.totalValue}>{formatMoney(total)}</Text>
+            <Text style={{ color: colors.muted }}>Валют бүрээр</Text>
+            {totals.length === 0 ? <Text style={styles.totalValue}>Данс алга</Text> : totals.map((row) => (
+              <Text key={row.currency} style={styles.totalValue}>{formatAmount(row.total, row.currency)}</Text>
+            ))}
           </View>
         }
         ListEmptyComponent={<EmptyView icon="card-outline" title="Данс алга" subtitle="+ товчоор бэлэн мөнгө, карт зэрэг дансаа нэмнэ үү" />}
@@ -41,9 +43,7 @@ export default function AccountsScreen() {
               <Text style={styles.name}>{item.name}</Text>
               <Text style={{ color: colors.muted, fontSize: 12 }}>{accountTypeLabel(item.type)}</Text>
             </View>
-            <Text style={[styles.balance, { color: Number(item.balance) < 0 ? colors.expense : colors.text }]}>
-              {formatMoney(Number(item.balance))}
-            </Text>
+            <Text style={styles.balance}>{formatAmount(Number(item.balance), item.currency)}</Text>
           </Pressable>
         )}
       />

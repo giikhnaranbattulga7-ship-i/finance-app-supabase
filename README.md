@@ -1,8 +1,22 @@
-# 💰 Хувийн санхүүгийн апп (Finance App · Supabase)
+# Миний мөнгө
+
+Гараар бүртгэдэг хувийн санхүү. Гурван таб: Нүүр, Гүйлгээ, Төсөв. Нийт үлдэгдэл, энэ сарын цэвэр, төсвөөс үлдсэн нь гурван өөр тоо. Нийлбэр зөвхөн ижил валют дотор. MNT дээр ₮, бусад дээр валютын код. Ханш байхгүй.
+
+Харагдах байдал нь хар `#000000`, карт `#121212`, цагаан үсэг, ногоон `#00BA7C`. Ногоон товч дээр хар үсэг. Энэ нь X Money аппын дэлгэц биш. Хэв маягийн эх: [9to5Mac](https://9to5mac.com/2026/07/27/x-money-apple-wallet/), [Bangkok Post](https://www.bangkokpost.com/life/tech/3294994/elon-musk-launches-x-money), [AP](https://apnews.com/article/elon-musk-x-money-cross-river-payments-0bb86f98e0747757992bc8f435f7014e). `money.x.com` 403 тул аппын дэлгэц баталгаажаагүй.
+
+Ажиллуулах: `npm install`, `.env` дотор зөвхөн anon түлхүүр, `npm start`. `scripts/rls-test.mjs` амьд төсөл `rahymsygjwytwludoucq` руу бичихгүй. Шинэ хүснэгт, migration байхгүй. ERD: `docs/diagrams/erd.mmd`. Figma холбоос, Expo Go, бодит нэвтэрсэн хадгалалт энэ өөрчлөлтөөр батлагдаагүй.
+
+Кодын асуулт, одоогийн мөр:
+
+1. `src/lib/validation.ts` дотор `todayISO` төхөөрөмжийн өдрийг авна. `toISOString` UTC тул өглөөний өдөр зөрж болно.
+2. `supabase/schema.sql` дотор `transactions owner all` нь `user_id` болон дансны эзнийг хамт шалгана.
+3. `src/services/tags.ts` дотор `setTransactionTags` хуучин холбоог устгаад шинийг нэмнэ. Энэ нь `transaction_tags` N:M.
+
+# Хувийн санхүүгийн апп (Finance App · Supabase)
 
 **SWM231 Мобайл програмчлал — Бие даалтын төсөл · Хамгаалалт-1**
 
-🌐 **Web demo:** https://finance-app-supabase.vercel.app · demo: `demo.user@financeapp.test` / `Demo1234!`
+🌐 **Web demo:** https://finance-app-supabase.vercel.app. Нэвтрэх нууц үгийг энд бичихгүй.
 
 React Native (Expo) + TypeScript + Expo Router + Supabase ашигласан, хувийн орлого, зарлага, данс, төсөв, шошгоо нэг дор хянах full-stack мобайл апп.
 

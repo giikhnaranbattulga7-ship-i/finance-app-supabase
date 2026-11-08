@@ -11,7 +11,7 @@ export function AuthShell({ title, subtitle, children }: PropsWithChildren<{ tit
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.logo}>
-            <Ionicons name="wallet" size={36} color="#fff" />
+            <Ionicons name="wallet" size={36} color={colors.onAccent} />
           </View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>

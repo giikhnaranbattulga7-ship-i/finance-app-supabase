@@ -1,11 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Chip } from '../../components/Chip';
 import { Fab } from '../../components/Fab';
 import { Screen } from '../../components/Screen';
 import { EmptyView, ErrorView, LoadingView } from '../../components/StateViews';
 import { TransactionItem } from '../../components/TransactionItem';
+import { monthKey, monthLabel } from '../../lib/format';
 import { colors, radius } from '../../lib/theme';
 import { listCategories } from '../../services/categories';
 import { listTransactions, PAGE_SIZE, TxFilter } from '../../services/transactions';
@@ -108,7 +109,17 @@ export default function TransactionsScreen() {
         <FlatList
           data={items}
           keyExtractor={(t) => t.id}
-          renderItem={({ item }) => <TransactionItem tx={item} onPress={() => router.push(`/transaction/${item.id}`)} />}
+          renderItem={({ item, index }) => {
+            const grouped = sort === 'date_desc' || sort === 'date_asc';
+            const previous = items[index - 1];
+            const header = grouped && monthKey(item.occurred_at) !== (previous ? monthKey(previous.occurred_at) : '');
+            return (
+              <View>
+                {header ? <Text style={styles.month}>{monthLabel(item.occurred_at)}</Text> : null}
+                <TransactionItem tx={item} onPress={() => router.push(`/transaction/${item.id}`)} />
+              </View>
+            );
+          }}
           contentContainerStyle={{ padding: 16, paddingBottom: 100, flexGrow: 1 }}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.4}
@@ -127,6 +138,7 @@ const styles = StyleSheet.create({
   filters: { paddingHorizontal: 16 },
   search: {
     backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
-    height: 44, paddingHorizontal: 14, marginBottom: 10, color: colors.text,
+    height: 48, paddingHorizontal: 14, marginBottom: 10, color: colors.text, fontSize: 16,
   },
+  month: { color: colors.muted, fontSize: 13, marginBottom: 8, marginTop: 8 },
 });

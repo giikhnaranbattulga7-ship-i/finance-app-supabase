@@ -57,8 +57,8 @@ export default function PremiumScreen() {
 }
 
 const styles = StyleSheet.create({
-  heroTitle: { color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 6 },
-  heroText: { color: '#E0E7FF', lineHeight: 22 },
+  heroTitle: { color: colors.onAccent, fontSize: 24, fontWeight: '800', marginBottom: 6 },
+  heroText: { color: colors.onAccent, lineHeight: 22 },
   plan: { fontSize: 16, fontWeight: '600', color: colors.text },
   price: { fontSize: 26, fontWeight: '800', color: colors.primary, marginVertical: 8 },
   h: { fontSize: 16, fontWeight: '700', marginVertical: 10, color: colors.text },
