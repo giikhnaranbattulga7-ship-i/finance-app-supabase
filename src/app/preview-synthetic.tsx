@@ -1,9 +1,11 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { Screen } from '../components/Screen';
 import { budgetRemaining, formatAmount, monthlyNet, sumByCurrency } from '../lib/finance';
-import { colors } from '../lib/theme';
+import { profileHref } from '../lib/routes';
+import { colors, touch } from '../lib/theme';
 
 const accounts = [
   { currency: 'MNT', amount: 1_250_000.5 },
@@ -21,6 +23,9 @@ export default function PreviewSynthetic() {
   return (
     <Screen title="Миний мөнгө">
       <ScrollView contentContainerStyle={styles.content}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Профайл" onPress={() => router.push(profileHref)} style={styles.profile}>
+          <Text style={styles.note}>Профайл</Text>
+        </Pressable>
         <Text style={styles.banner}>Синтетик өгөгдөл. Санд хадгалаагүй.</Text>
         <Text style={styles.label}>Нийт үлдэгдэл</Text>
         <Text style={styles.balance}>{formatAmount(totals[0].total, 'MNT')}</Text>
@@ -47,6 +52,7 @@ export default function PreviewSynthetic() {
 
 const styles = StyleSheet.create({
   content: { padding: 16 },
+  profile: { minHeight: touch, justifyContent: 'center', alignSelf: 'flex-end' },
   banner: { color: colors.text, backgroundColor: colors.card, padding: 12, borderRadius: 12, marginBottom: 16 },
   label: { color: colors.muted, fontSize: 14, marginBottom: 6 },
   balance: { color: colors.primary, fontSize: 44, fontWeight: '800' },

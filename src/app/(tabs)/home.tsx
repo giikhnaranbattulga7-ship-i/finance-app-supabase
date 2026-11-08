@@ -9,6 +9,7 @@ import { TransactionItem } from '../../components/TransactionItem';
 import { useFocusData } from '../../hooks/useAsync';
 import { budgetRemaining, formatAmount, sumByCurrency } from '../../lib/finance';
 import { colors, touch } from '../../lib/theme';
+import { profileHref } from '../../lib/routes';
 import { monthStartISO } from '../../lib/validation';
 import { listAccounts } from '../../services/accounts';
 import { listBudgets } from '../../services/budgets';
@@ -41,7 +42,7 @@ export default function HomeScreen() {
     <Screen
       title="Миний мөнгө"
       right={(
-        <Pressable accessibilityRole="button" accessibilityLabel="Профайл" onPress={() => router.push('/(tabs)/profile')} style={styles.profile}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Профайл" hitSlop={8} onPress={() => router.push(profileHref)} style={styles.profile}>
           <Ionicons name="person-outline" size={22} color={colors.text} />
         </Pressable>
       )}

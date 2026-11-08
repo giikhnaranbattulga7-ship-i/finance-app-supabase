@@ -20,6 +20,6 @@ export function Screen({ title, right, children }: PropsWithChildren<{ title?: s
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  title: { fontSize: 26, fontWeight: '700', color: colors.text },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, zIndex: 2 },
+  title: { flexShrink: 1, fontSize: 26, fontWeight: '700', color: colors.text },
 });

@@ -1,14 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Fab } from '../../components/Fab';
-import { Screen } from '../../components/Screen';
-import { EmptyView, ErrorView, LoadingView } from '../../components/StateViews';
-import { useFocusData } from '../../hooks/useAsync';
-import { formatAmount, sumByCurrency } from '../../lib/finance';
-import { ACCOUNT_TYPES, accountTypeLabel } from '../../lib/labels';
-import { colors } from '../../lib/theme';
-import { listAccounts } from '../../services/accounts';
+import { Fab } from '../components/Fab';
+import { EmptyView, ErrorView, LoadingView } from '../components/StateViews';
+import { useFocusData } from '../hooks/useAsync';
+import { formatAmount, sumByCurrency } from '../lib/finance';
+import { ACCOUNT_TYPES, accountTypeLabel } from '../lib/labels';
+import { colors } from '../lib/theme';
+import { listAccounts } from '../services/accounts';
 
 export default function AccountsScreen() {
   const { data, loading, error, refreshing, refresh, reload } = useFocusData(listAccounts);
@@ -18,7 +17,7 @@ export default function AccountsScreen() {
   const totals = sumByCurrency((data ?? []).map((account) => ({ currency: account.currency, amount: Number(account.balance) })));
 
   return (
-    <Screen title="Данснууд">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <FlatList
         data={data ?? []}
         keyExtractor={(a) => a.id}
@@ -48,7 +47,7 @@ export default function AccountsScreen() {
         )}
       />
       <Fab onPress={() => router.push('/account/new')} />
-    </Screen>
+    </View>
   );
 }
 

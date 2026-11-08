@@ -2,21 +2,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { Href, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button } from '../../components/Button';
-import { Card } from '../../components/Card';
-import { Input } from '../../components/Input';
-import { Screen } from '../../components/Screen';
-import { useAuth } from '../../context/AuthContext';
-import { confirmAction, showMessage } from '../../lib/confirm';
-import { supabase } from '../../lib/supabase';
-import { colors } from '../../lib/theme';
-import { validateName } from '../../lib/validation';
+import { Button } from '../components/Button';
+import { Card } from '../components/Card';
+import { Input } from '../components/Input';
+import { useAuth } from '../context/AuthContext';
+import { confirmAction, showMessage } from '../lib/confirm';
+import { accountsHref } from '../lib/routes';
+import { supabase } from '../lib/supabase';
+import { colors } from '../lib/theme';
+import { validateName } from '../lib/validation';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function MenuRow({ icon, label, href }: { icon: IconName; label: string; href: Href }) {
   return (
-    <Pressable style={styles.menu} onPress={() => router.push(href)}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} style={styles.menu} onPress={() => router.push(href)}>
       <Ionicons name={icon} size={22} color={colors.primary} />
       <Text style={styles.menuText}>{label}</Text>
       <Ionicons name="chevron-forward" size={18} color={colors.muted} />
@@ -45,7 +45,7 @@ export default function ProfileScreen() {
   const onLogout = () => confirmAction('Гарах', 'Системээс гарах уу?', () => signOut());
 
   return (
-    <Screen title="Профайл">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
           <Button title="Хадгалах" variant="outline" onPress={saveName} loading={saving} />
         </Card>
 
-        <MenuRow icon="card-outline" label="Данс" href="/(tabs)/accounts" />
+        <MenuRow icon="card-outline" label="Данс" href={accountsHref} />
         <MenuRow icon="pricetags-outline" label="Ангиллууд" href="/categories" />
         <MenuRow icon="bookmark-outline" label="Шошгууд" href="/tags" />
         <MenuRow icon="diamond-outline" label="Premium болох" href="/premium" />
@@ -74,7 +74,7 @@ export default function ProfileScreen() {
 
         <Button title="Гарах" variant="danger" onPress={onLogout} style={{ marginTop: 16 }} />
       </ScrollView>
-    </Screen>
+    </View>
   );
 }
 

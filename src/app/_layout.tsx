@@ -23,6 +23,8 @@ function RootNavigator() {
       {/* Нэвтэрсэн хэрэглэгч */}
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="profile" options={{ headerShown: true, title: 'Профайл', headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text, headerBackTitle: 'Буцах' }} />
+        <Stack.Screen name="accounts" options={{ headerShown: true, title: 'Данснууд', headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text, headerBackTitle: 'Буцах' }} />
         <Stack.Screen name="transaction/[id]" options={{ headerShown: true, title: 'Гүйлгээ', headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text }} />
         <Stack.Screen name="account/[id]" options={{ headerShown: true, title: 'Данс', headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text }} />
         <Stack.Screen name="budget/[id]" options={{ headerShown: true, title: 'Төсөв', headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text }} />
