@@ -26,10 +26,10 @@ export default function GuestScreen() {
   );
 
   return (
-    <Screen title="Зочин горим">
+    <Screen title="Z Money">
       <View style={{ paddingHorizontal: 16 }}>
         <Text style={{ color: colors.muted, marginBottom: 12 }}>
-          Орлого, зарлага, төсөв, данснуудаа нэг дор хянах апп. Бүртгүүлж өөрийн өгөгдлөө хадгалаарай.
+          Зочин горим. Орлого, зарлага, төсөв, данснуудаа нэг дор хянах апп. Бүртгүүлж өөрийн өгөгдлөө хадгалаарай.
         </Text>
         <TextInput value={q} onChangeText={setQ} placeholder="Ангилал хайх..." placeholderTextColor={colors.muted} style={styles.search} />
         <View style={{ flexDirection: 'row' }}>

@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
   return (
     <Screen
-      title="Миний мөнгө"
+      title="Z Money"
       right={(
         <Pressable accessibilityRole="button" accessibilityLabel="Профайл" hitSlop={8} onPress={() => router.push(profileHref)} style={styles.profile}>
           <Ionicons name="person-outline" size={22} color={colors.text} />

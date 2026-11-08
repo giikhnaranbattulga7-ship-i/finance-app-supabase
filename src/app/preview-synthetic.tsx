@@ -21,7 +21,7 @@ const budgets = budgetRemaining([{ limit: 150000, spent: 195000 }]);
 export default function PreviewSynthetic() {
   const totals = sumByCurrency(accounts);
   return (
-    <Screen title="Миний мөнгө">
+    <Screen title="Z Money">
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable accessibilityRole="button" accessibilityLabel="Профайл" onPress={() => router.push(profileHref)} style={styles.profile}>
           <Text style={styles.note}>Профайл</Text>

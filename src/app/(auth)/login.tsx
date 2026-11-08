@@ -32,7 +32,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthShell title="Миний мөнгө" subtitle="Орлого, зарлагаа гараар хянаарай">
+    <AuthShell title="Z Money" subtitle="Орлого, зарлагаа гараар хянаарай">
       <Input label="Имэйл" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" error={errors.email} />
       <Input label="Нууц үг" value={password} onChangeText={setPassword} secureTextEntry placeholder="••••••" error={errors.password} />
       {errors.form ? <Text style={styles.formError}>{errors.form}</Text> : null}
