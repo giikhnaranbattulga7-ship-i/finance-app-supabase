@@ -6,19 +6,21 @@
 
 Харагдах байдал нь хар `#000000`, карт `#121212`, цагаан үсэг, ногоон `#00BA7C`. Ногоон товч дээр хар үсэг. Энэ нь X Money аппын дэлгэц биш. Хэв маягийн эх: [9to5Mac](https://9to5mac.com/2026/07/27/x-money-apple-wallet/), [Bangkok Post](https://www.bangkokpost.com/life/tech/3294994/elon-musk-launches-x-money), [AP](https://apnews.com/article/elon-musk-x-money-cross-river-payments-0bb86f98e0747757992bc8f435f7014e). `money.x.com` 403 тул аппын дэлгэц баталгаажаагүй.
 
-Ажиллуулах: `npm install`, `.env` дотор зөвхөн anon түлхүүр, `npm start`. `scripts/rls-test.mjs` амьд төсөл `rahymsygjwytwludoucq` руу бичихгүй. Шинэ хүснэгт, migration байхгүй. ERD: `docs/diagrams/erd.mmd`. Figma холбоос, Expo Go, бодит нэвтэрсэн хадгалалт энэ өөрчлөлтөөр батлагдаагүй.
+Ажиллуулах: `npm install`, `.env` дотор зөвхөн нийтийн `EXPO_PUBLIC_SUPABASE_URL` ба `EXPO_PUBLIC_SUPABASE_ANON_KEY`, дараа нь `npx expo start -c`. `scripts/rls-test.mjs` амьд төсөл `rahymsygjwytwludoucq` руу бичихгүй. Шинэ хүснэгт, migration байхгүй. ERD: `docs/diagrams/erd.mmd`. Figma холбоосыг энэ салбар нэмээгүй. Expo Go болон Android эмулятор энэ орчинд ажиллуулаагүй: Android SDK, `adb` байхгүй. Вэб дээр нэвтэрч, хичээлийн жишээ мөрүүдийг хадгалсан. Түр `QA_DEMO` мөрүүдийг үүсгэж, уншиж, засаж, устгасан. Хуучин 2 гүйлгээ ба `[ДЕМО]` 3 зарлага, 3 төсөв үлдсэн.
 
-Кодын асуулт, одоогийн мөр:
+`https://finance-app-supabase.vercel.app` нь өмнөх байршуулалт. Энэ салбарын одоогийн Z Money биш. Богино хугацааны нийтийн урьдчилан харалт тусад нь гарсан бөгөөд Vercel бүртгэлгүй тул ойролцоогоор 60 минутын дараа устана. Байнгийн хаягийг эзэмшигч өөрөө claim хийсний дараа л баталгаажна.
 
-1. `src/lib/validation.ts` дотор `todayISO` төхөөрөмжийн өдрийг авна. `toISOString` UTC тул өглөөний өдөр зөрж болно.
-2. `supabase/schema.sql` дотор `transactions owner all` нь `user_id` болон дансны эзнийг хамт шалгана.
-3. `src/services/tags.ts` дотор `setTransactionTags` хуучин холбоог устгаад шинийг нэмнэ. Энэ нь `transaction_tags` N:M.
+Кодын асуулт, `d734767` дээрх мөр:
+
+1. `src/lib/validation.ts` 48-р мөр `todayISO` нь `localTodayISO`-г дуудна. `toISOString` UTC тул өглөөний өдөр зөрж болно.
+2. `supabase/schema.sql` 196–202-р мөр `transactions owner all` нь `user_id` болон дансны эзнийг хамт шалгана.
+3. `src/services/tags.ts` 23–27-р мөр `setTransactionTags` хуучин холбоог устгаад шинийг нэмнэ. Энэ нь `transaction_tags` N:M.
 
 # Хувийн санхүүгийн апп (Finance App · Supabase)
 
 **SWM231 Мобайл програмчлал — Бие даалтын төсөл · Хамгаалалт-1**
 
-🌐 **Web demo:** https://finance-app-supabase.vercel.app. Нэвтрэх нууц үгийг энд бичихгүй.
+Өмнөх вэб хаяг `https://finance-app-supabase.vercel.app` энэ салбарын Z Money биш. Нууц үгийг README-д бичихгүй. Анги нэг бүр өөрийн бүртгэлээр орно. Эзний бүртгэлийг тараахгүй.
 
 React Native (Expo) + TypeScript + Expo Router + Supabase ашигласан, хувийн орлого, зарлага, данс, төсөв, шошгоо нэг дор хянах full-stack мобайл апп.
 
@@ -70,7 +72,7 @@ src/
 │   ├── _layout.tsx           # AuthProvider + Stack.Protected (guest/user/admin)
 │   ├── index.tsx             # session-оос хамаарч redirect
 │   ├── (auth)/               # login, register, forgot-password
-│   ├── (tabs)/               # home, transactions, budgets, accounts, profile
+│   ├── (tabs)/               # home, transactions, budgets. Профайл ба данс stack дэлгэц
 │   ├── transaction/[id].tsx  # гүйлгээ нэмэх/засах/устгах (id = 'new' → нэмэх)
 │   ├── account/[id].tsx      # данс форм
 │   ├── budget/[id].tsx       # төсөв форм
@@ -136,10 +138,10 @@ docs/                         # ERD, user flow, дизайн, дэлгэцийн
 | `01-login` | Нэвтрэх — имэйл/нууц үг validation, Монгол алдааны мессеж, «Зочноор үзэх» |
 | `02-register` | Бүртгүүлэх — нэр, имэйл, нууц үг давталт шалгана |
 | `03-guest` | Зочин — үндсэн ангиллыг хайх/шүүх (нэвтрэлтгүй, anon RLS) |
-| `04-home` | Нүүр — нийт үлдэгдэл, сарын орлого/зарлага, ангиллын баган график, сүүлийн гүйлгээ |
+| `04-home` | Нүүр — нийт үлдэгдэл, энэ сарын цэвэр, төсвөөс үлдсэн, сүүлийн гүйлгээ. Гурван тоо тусдаа |
 | `05-transactions` | Гүйлгээ — хайлт (debounce), төрөл/ангилал шүүлт, эрэмбэ, infinite scroll, pull-to-refresh |
 | `06-transaction-form` | Гүйлгээ нэмэх/засах — данс, ангилал, огноо, тэмдэглэл, олон шошго (N:M) |
-| `07-budgets` | Төсөв — сар солих, зарцуулалтын явц, 80%+ шар, хэтэрвэл улаан |
+| `07-budgets` | Төсөв — сар солих, зарцуулалтын явц. Зурвас ногоон. Хэтрэлтийг «Хэтэрсэн» текст харуулна |
 | `08-accounts` | Данс — view-ээс тооцсон үлдэгдэл |
 | `09-categories` | Ангилал — үндсэн нь 🔒, өөрийнх CRUD |
 | `10-profile` | Профайл — role badge, нэр засах, цэс, гарах (баталгаажуулалт) |
@@ -155,8 +157,19 @@ git clone https://github.com/giikhnaranbattulga7-ship-i/finance-app-supabase.git
 cd finance-app-supabase
 npm install
 cp .env.example .env    # EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY бөглөнө
-npx expo start          # Expo Go апп-аар QR код уншуулна
+npx expo start -c      # Expo Go-оор QR уншуулна. Энэ алхам энд ажиллаагүй
 ```
+
+Expo Go, оюутны машин дээр:
+
+1. Утсан дээр Expo Go суулгана. Компьютер ба утас нэг сүлжээнд байна.
+2. `cursor/minii-mungu-design-69fa` салбарыг татна. `npm install`.
+3. `.env` файлд зөвхөн нийтийн Supabase URL ба anon/publishable түлхүүр. Файл commit хийхгүй.
+4. `npx expo start -c`. Android дээр Expo Go-оор QR уншина. iOS дээр камераар уншина.
+5. Өөрийн имэйлээр бүртгүүлнэ. Эзний бүртгэлээр орохгүй.
+6. Данс, нэг зарлага, нэг төсөв нэмээд устгахын өмнөх асуултыг харна.
+
+Android эмулятор: Android Studio → Device Manager → виртуал төхөөрөмж асаагаад `npx expo start -c` дээр `a` дарна. Энэ орчинд SDK байхгүй тул эмулятор асаагаагүй.
 
 ### Supabase тохиргоо (шинэ төсөл дээр)
 
