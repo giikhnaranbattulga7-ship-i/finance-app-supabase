@@ -164,7 +164,7 @@ git clone https://github.com/giikhnaranbattulga7-ship-i/finance-app-supabase.git
 cd finance-app-supabase
 npm install
 cp .env.example .env    # EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY бөглөнө
-npx expo start -c      # Expo Go-оор QR уншуулна. Энэ алхам энд ажиллаагүй
+npx expo start -c      # Expo Go QR. Биеийн утсыг тусад нь шалгана
 ```
 
 Expo Go, оюутны машин дээр:
@@ -176,7 +176,7 @@ Expo Go, оюутны машин дээр:
 5. Өөрийн имэйлээр бүртгүүлнэ. Эзний бүртгэлээр орохгүй.
 6. Данс, нэг зарлага, нэг төсөв нэмээд устгахын өмнөх асуултыг харна.
 
-Android эмулятор: Android Studio → Device Manager → виртуал төхөөрөмж асаагаад `npx expo start -c` дээр `a` дарна. Энэ орчинд SDK байхгүй тул эмулятор асаагаагүй.
+Android эмулятор, энэ орчинд шалгасан арга: Android командын мөрийн SDK, API 36 (`google_apis` x86_64) эмулятор, Expo Go 58.0.5. `npx expo-go download android 58` APK-г эмулятор дээр суулгана. `npx expo start --port 8081` гарсны дараа `adb reverse tcp:8081 tcp:8081` хийж Expo Go-оор `exp://127.0.0.1:8081` нээнэ. KVM хэрэгтэй. Play Store-ийн Expo Go нь SDK 58-аас хоцорч болно. Эх: [Expo Go version mismatch](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/). Биеийн утасны QR энэ алхмаас тусдаа.
 
 ### Supabase тохиргоо (шинэ төсөл дээр)
 
