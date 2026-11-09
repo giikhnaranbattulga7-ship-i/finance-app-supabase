@@ -1,3 +1,7 @@
+%% Authoritative source: supabase/schema.sql on this branch. Not a live-database export.
+%% 8 tables. account_balances is a security_invoker VIEW, not a ninth table.
+%% budgets.month is date (first day of the month). No statement_imports.
+%% premium_orders is schema only. It is not a working payment flow.
 erDiagram
   AUTH_USERS ||--|| PROFILES : "1:1"
   PROFILES ||--o{ ACCOUNTS : "1:N"
@@ -33,10 +37,10 @@ erDiagram
   TRANSACTIONS { uuid id PK
     uuid user_id FK
     uuid account_id FK
-    uuid category_id FK
-    text type
-    numeric amount "> 0"
-    text note
+    uuid category_id FK "nullable, on delete set null"
+    text type "income|expense"
+    numeric amount "numeric(14,2) > 0"
+    text note "<= 200"
     date occurred_at }
   BUDGETS { uuid id PK
     uuid user_id FK

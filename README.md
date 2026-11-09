@@ -6,9 +6,9 @@
 
 Харагдах байдал нь хар `#000000`, карт `#121212`, цагаан үсэг, ногоон `#00BA7C`. Ногоон товч дээр хар үсэг. Энэ нь X Money аппын дэлгэц биш. Хэв маягийн эх: [9to5Mac](https://9to5mac.com/2026/07/27/x-money-apple-wallet/), [Bangkok Post](https://www.bangkokpost.com/life/tech/3294994/elon-musk-launches-x-money), [AP](https://apnews.com/article/elon-musk-x-money-cross-river-payments-0bb86f98e0747757992bc8f435f7014e). `money.x.com` 403 тул аппын дэлгэц баталгаажаагүй.
 
-Ажиллуулах: `npm install`, `.env` дотор зөвхөн нийтийн `EXPO_PUBLIC_SUPABASE_URL` ба `EXPO_PUBLIC_SUPABASE_ANON_KEY`, дараа нь `npx expo start -c`. `scripts/rls-test.mjs` амьд төсөл `rahymsygjwytwludoucq` руу бичихгүй. Шинэ хүснэгт, migration байхгүй. ERD: `docs/diagrams/erd.mmd`. Figma холбоосыг энэ салбар нэмээгүй. Expo Go болон Android эмулятор энэ орчинд ажиллуулаагүй: Android SDK, `adb` байхгүй. Вэб дээр нэвтэрч, хичээлийн жишээ мөрүүдийг хадгалсан. Түр `QA_DEMO` мөрүүдийг үүсгэж, уншиж, засаж, устгасан. Хуучин 2 гүйлгээ ба `[ДЕМО]` 3 зарлага, 3 төсөв үлдсэн.
+Ажиллуулах: `npm install`, `.env` дотор зөвхөн нийтийн `EXPO_PUBLIC_SUPABASE_URL` ба `EXPO_PUBLIC_SUPABASE_ANON_KEY`, дараа нь `npx expo start -c`. `scripts/rls-test.mjs` амьд төсөл `rahymsygjwytwludoucq` руу бичихгүй. Шинэ хүснэгт, migration байхгүй. ERD: `docs/diagrams/erd.mmd`, `supabase/schema.sql`-той тулгасан. Дизайн ба FigJam нь үзэл баримтлал, аппын бодит дэлгэцийн зураг биш. Вэб дээр нэвтэрч, хичээлийн жишээ мөрүүдийг хадгалсан. Түр `QA_DEMO` мөрүүдийг үүсгэж, уншиж, засаж, устгасан. Хуучин 2 гүйлгээ ба `[ДЕМО]` 3 зарлага, 3 төсөв үлдсэн.
 
-`https://finance-app-supabase.vercel.app` нь өмнөх байршуулалт. Энэ салбарын одоогийн Z Money биш. Богино хугацааны нийтийн урьдчилан харалт тусад нь гарсан бөгөөд Vercel бүртгэлгүй тул ойролцоогоор 60 минутын дараа устана. Байнгийн хаягийг эзэмшигч өөрөө claim хийсний дараа л баталгаажна.
+`https://finance-app-supabase.vercel.app` нь өмнөх байршуулалт. Энэ салбарын одоогийн Z Money биш. Байнгийн нийтийн хаяг хараахан байхгүй. Vercel нэвтрэлт хүлээгдэж байна.
 
 Кодын асуулт, `d734767` дээрх мөр:
 
@@ -122,7 +122,14 @@ docs/                         # ERD, user flow, дизайн, дэлгэцийн
 
 ![User flow](docs/user-flow.png)
 
-## 🎨 Дизайн (Figma mockup)
+## 🎨 Дизайн ба ERD
+
+Засах боломжтой. Хоёулаа үзэл баримтлал. Аппын бодит дэлгэцийн зураг биш. ERD-г амьд сангаас биш, `supabase/schema.sql`-оос баталгаажуулсан. 8 хүснэгт. `account_balances` нь view, 9 дэх хүснэгт биш. `categories.user_id` хоосон бол нийтийн ангилал. `transaction_tags` нь хос түлхүүр, `user_id` багангүй. `budgets.month` нь `date`. `premium_orders` схемд бий, төлбөрийн урсгал биш.
+
+- [Figma дизайн](https://www.figma.com/design/BNT3uFJnOSpv7TdKDsNn6E)
+- [FigJam ERD](https://www.figma.com/board/qMLQgmvIpDX0IEIOGsaYRB)
+
+## 🎨 Хуучин дотоод зураг
 
 | | |
 |---|---|

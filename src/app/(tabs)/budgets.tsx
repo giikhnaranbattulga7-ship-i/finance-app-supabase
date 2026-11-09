@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,7 @@ const MONTHS = ['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-�
 
 // Сарын төсөв ба зарцуулалт (ангилал бүрээр)
 export default function BudgetsScreen() {
+  const focused = useIsFocused();
   const [cursor, setCursor] = useState(new Date());
   const month = monthStartISO(cursor);
 
@@ -62,7 +63,7 @@ export default function BudgetsScreen() {
           }}
         />
       )}
-      <Fab onPress={() => router.push({ pathname: '/budget/[id]', params: { id: 'new', month } })} />
+      {focused ? <Fab onPress={() => router.push({ pathname: '/budget/[id]', params: { id: 'new', month } })} /> : null}
     </Screen>
   );
 }

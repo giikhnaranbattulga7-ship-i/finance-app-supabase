@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Chip } from '../../components/Chip';
@@ -21,6 +21,7 @@ const SORTS: { key: NonNullable<TxFilter['sort']>; label: string }[] = [
 
 // Гүйлгээний жагсаалт: хайлт, шүүлт, эрэмбэ, infinite scroll, pull-to-refresh
 export default function TransactionsScreen() {
+  const focused = useIsFocused();
   const [items, setItems] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
@@ -129,7 +130,7 @@ export default function TransactionsScreen() {
           ListFooterComponent={loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primary} /> : undefined}
         />
       )}
-      <Fab onPress={() => router.push('/transaction/new')} />
+      {focused ? <Fab onPress={() => router.push('/transaction/new')} /> : null}
     </Screen>
   );
 }

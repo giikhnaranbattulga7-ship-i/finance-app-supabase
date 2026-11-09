@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Fab } from '../components/Fab';
 import { EmptyView, ErrorView, LoadingView } from '../components/StateViews';
@@ -10,6 +10,7 @@ import { colors } from '../lib/theme';
 import { listAccounts } from '../services/accounts';
 
 export default function AccountsScreen() {
+  const focused = useIsFocused();
   const { data, loading, error, refreshing, refresh, reload } = useFocusData(listAccounts);
 
   if (loading && !data) return <LoadingView />;
@@ -46,7 +47,7 @@ export default function AccountsScreen() {
           </Pressable>
         )}
       />
-      <Fab onPress={() => router.push('/account/new')} />
+      {focused ? <Fab onPress={() => router.push('/account/new')} /> : null}
     </View>
   );
 }

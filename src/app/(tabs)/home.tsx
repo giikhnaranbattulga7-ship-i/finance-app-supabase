@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card } from '../../components/Card';
 import { Fab } from '../../components/Fab';
@@ -16,6 +16,7 @@ import { listBudgets } from '../../services/budgets';
 import { listTransactions, monthSummary } from '../../services/transactions';
 
 export default function HomeScreen() {
+  const focused = useIsFocused();
   const { data, loading, error, refreshing, refresh, reload } = useFocusData(async () => {
     const month = monthStartISO();
     const [accounts, summary, recent, budgets] = await Promise.all([
@@ -83,7 +84,7 @@ export default function HomeScreen() {
           <TransactionItem key={tx.id} tx={tx} onPress={() => router.push(`/transaction/${tx.id}`)} />
         ))}
       </ScrollView>
-      <Fab onPress={() => router.push('/transaction/new')} />
+      {focused ? <Fab onPress={() => router.push('/transaction/new')} /> : null}
     </Screen>
   );
 }
