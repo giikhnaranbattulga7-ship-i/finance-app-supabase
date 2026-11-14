@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { Screen } from '../components/Screen';
 import { budgetRemaining, formatAmount, monthlyNet, sumByCurrency } from '../lib/finance';
@@ -31,15 +30,15 @@ export default function PreviewSynthetic() {
         <Text style={styles.balance}>{formatAmount(totals[0].total, 'MNT')}</Text>
         <Text style={styles.note}>Нийт үлдэгдэл зөвхөн MNT. Бусад валют доор тусдаа.</Text>
         <Text style={styles.other}>{formatAmount(totals[1].total, 'USD')}</Text>
-        <Card>
+        <View style={styles.block}>
           <Text style={styles.label}>Энэ сарын цэвэр</Text>
           <Text style={styles.figure}>{formatAmount(month.net, 'MNT')}</Text>
           <Text style={styles.note}>Бусад валютын гүйлгээ энэ тоонд ороогүй.</Text>
-        </Card>
-        <Card>
+        </View>
+        <View style={styles.block}>
           <Text style={styles.label}>Төсвөөс үлдсэн</Text>
           <Text style={styles.figure}>{formatAmount(budgets.total ?? 0, 'MNT')} · Хэтэрсэн</Text>
-        </Card>
+        </View>
         <View style={styles.card}>
           <Text style={styles.figure}>Хоол</Text>
           <ProgressBar value={195000 / 150000} />
@@ -55,9 +54,10 @@ const styles = StyleSheet.create({
   profile: { minHeight: touch, justifyContent: 'center', alignSelf: 'flex-end' },
   banner: { color: colors.text, backgroundColor: colors.card, padding: 12, borderRadius: 12, marginBottom: 16 },
   label: { color: colors.muted, fontSize: 14, marginBottom: 6 },
-  balance: { color: colors.primary, fontSize: 44, fontWeight: '800' },
-  figure: { color: colors.text, fontSize: 28, fontWeight: '700' },
+  balance: { color: colors.primary, fontSize: 48, fontWeight: '800' },
+  figure: { color: colors.text, fontSize: 32, fontWeight: '700' },
   note: { color: colors.muted, marginTop: 6 },
   other: { color: colors.text, fontSize: 18, marginVertical: 8 },
+  block: { marginTop: 24 },
   card: { backgroundColor: colors.card, borderRadius: 16, padding: 16 },
 });

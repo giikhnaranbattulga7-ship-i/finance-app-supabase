@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoadingView } from '../components/StateViews';
 import { OfflineBanner } from '../components/OfflineBanner';
@@ -50,10 +50,17 @@ export default function RootLayout() {
       <AuthProvider>
         <StatusBar style="light" />
         <OfflineBanner />
-        <View style={{ flex: 1, backgroundColor: colors.bg }}>
-          <RootNavigator />
+        <View style={styles.app}>
+          <View style={styles.column}>
+            <RootNavigator />
+          </View>
         </View>
       </AuthProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  app: { flex: 1, backgroundColor: colors.bg, alignItems: 'center' },
+  column: { flex: 1, width: '100%', maxWidth: 480 },
+});

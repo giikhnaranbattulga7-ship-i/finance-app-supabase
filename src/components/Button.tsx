@@ -24,6 +24,7 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
         styles.base,
         { backgroundColor: bg, opacity: isDisabled ? 0.6 : pressed ? 0.85 : 1 },
         variant === 'outline' && styles.outline,
+        variant === 'danger' && styles.danger,
         style,
       ]}
     >
@@ -35,5 +36,6 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
 const styles = StyleSheet.create({
   base: { minHeight: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   outline: { borderWidth: 1.5, borderColor: colors.primary },
+  danger: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
   text: { fontSize: 16, fontWeight: '600' },
 });

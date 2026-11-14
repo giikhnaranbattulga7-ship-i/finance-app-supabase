@@ -5,7 +5,7 @@ import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { Screen } from '../components/Screen';
-import { ErrorView, LoadingView } from '../components/StateViews';
+import { EmptyView, ErrorView, LoadingView } from '../components/StateViews';
 import { colors, radius } from '../lib/theme';
 import { listCategories } from '../services/categories';
 import { Category, TxType } from '../types/database';
@@ -43,7 +43,8 @@ export default function GuestScreen() {
           data={filtered}
           keyExtractor={(c) => c.id}
           numColumns={2}
-          contentContainerStyle={{ padding: 12 }}
+          contentContainerStyle={{ padding: 12, flexGrow: 1 }}
+          ListEmptyComponent={<EmptyView title="Ангилал олдсонгүй" subtitle="Хайлт эсвэл шүүлтээ өөрчилнө үү" />}
           renderItem={({ item }) => (
             <View style={styles.tile}>
               <Ionicons name={item.icon as never} size={26} color={item.color} />
@@ -60,7 +61,7 @@ export default function GuestScreen() {
 }
 
 const styles = StyleSheet.create({
-  search: { backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, height: 44, paddingHorizontal: 14, marginBottom: 10, color: colors.text },
+  search: { backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, height: 48, paddingHorizontal: 14, marginBottom: 10, color: colors.text },
   tile: { flex: 1, margin: 4, backgroundColor: colors.card, borderRadius: 14, padding: 16, alignItems: 'center' },
   tileText: { marginTop: 6, color: colors.text, fontWeight: '500' },
 });

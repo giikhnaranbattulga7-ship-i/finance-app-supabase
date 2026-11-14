@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { Chip } from '../../components/Chip';
 import { Input } from '../../components/Input';
@@ -33,6 +33,7 @@ export default function TransactionForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [errors, setErrors] = useState<Errors>({});
+  const [showExtra, setShowExtra] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function TransactionForm() {
           setAccountId(tx.account_id);
           setCategoryId(tx.category_id);
           setTagIds(tx.transaction_tags?.map((t) => t.tag.id) ?? []);
+          setShowExtra(Boolean(tx.note?.trim() || tx.transaction_tags?.length));
         }
       } catch (e) {
         setLoadError((e as Error).message);
@@ -114,11 +116,11 @@ export default function TransactionForm() {
       <Stack.Screen options={{ title: isNew ? 'Шинэ гүйлгээ' : 'Гүйлгээ засах' }} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.segment}>
-          <Chip label="Зарлага" active={type === 'expense'} color={colors.expense} onPress={() => { setType('expense'); setCategoryId(null); }} />
-          <Chip label="Орлого" active={type === 'income'} color={colors.income} onPress={() => { setType('income'); setCategoryId(null); }} />
+          <Chip label="Зарлага" active={type === 'expense'} onPress={() => { setType('expense'); setCategoryId(null); }} />
+          <Chip label="Орлого" active={type === 'income'} onPress={() => { setType('income'); setCategoryId(null); }} />
         </View>
 
-        <Input label="Дүн (₮)" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="15000" error={errors.amount} />
+        <Input label="Дүн (₮)" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="15000" error={errors.amount} style={styles.amount} />
 
         <Text style={styles.label}>Данс</Text>
         {accounts.length === 0 ? (
@@ -133,19 +135,26 @@ export default function TransactionForm() {
         <Text style={styles.label}>Ангилал</Text>
         <View style={styles.wrap}>
           {visibleCats.map((c) => (
-            <Chip key={c.id} label={c.name} color={c.color} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
+            <Chip key={c.id} label={c.name} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
           ))}
         </View>
         {errors.category ? <Text style={styles.error}>{errors.category}</Text> : null}
 
         <Input label="Огноо (YYYY-MM-DD)" value={date} onChangeText={setDate} placeholder="2026-11-05" error={errors.date} />
-        <Input label="Тэмдэглэл" value={note} onChangeText={setNote} placeholder="Жишээ: өдрийн хоол" error={errors.note} maxLength={200} />
 
-        <Text style={styles.label}>Шошго (олныг сонгож болно)</Text>
-        <View style={styles.wrap}>
-          {tags.length === 0 ? <Text style={{ color: colors.muted }}>Профайл → Шошгууд хэсгээс шошго үүсгэнэ</Text> : null}
-          {tags.map((t) => <Chip key={t.id} label={`#${t.name}`} active={tagIds.includes(t.id)} onPress={() => toggleTag(t.id)} />)}
-        </View>
+        <Pressable accessibilityRole="button" onPress={() => setShowExtra((open) => !open)} style={styles.extra}>
+          <Text style={styles.extraText}>{showExtra ? 'Нэмэлтээ хаах' : 'Нэмэлт: тэмдэглэл, шошго'}</Text>
+        </Pressable>
+        {showExtra ? (
+          <>
+            <Input label="Тэмдэглэл" value={note} onChangeText={setNote} placeholder="Жишээ: өдрийн хоол" error={errors.note} maxLength={200} />
+            <Text style={styles.label}>Шошго (олныг сонгож болно)</Text>
+            <View style={styles.wrap}>
+              {tags.length === 0 ? <Text style={{ color: colors.muted }}>Профайл → Шошгууд хэсгээс шошго үүсгэнэ</Text> : null}
+              {tags.map((t) => <Chip key={t.id} label={`#${t.name}`} active={tagIds.includes(t.id)} onPress={() => toggleTag(t.id)} />)}
+            </View>
+          </>
+        ) : null}
 
         <Button title={isNew ? 'Нэмэх' : 'Хадгалах'} onPress={onSave} loading={saving} style={{ marginTop: 12 }} />
         {!isNew ? <Button title="Устгах" variant="danger" onPress={onDelete} style={{ marginTop: 10 }} /> : null}
@@ -155,8 +164,11 @@ export default function TransactionForm() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 48, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  content: { padding: 16, paddingBottom: 48, width: '100%', maxWidth: 480, alignSelf: 'center' },
   segment: { flexDirection: 'row', marginBottom: 12 },
+  amount: { fontSize: 28, fontWeight: '700', height: 64 },
+  extra: { minHeight: 48, justifyContent: 'center', marginBottom: 8 },
+  extraText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
   label: { fontSize: 13, color: colors.muted, marginBottom: 6, fontWeight: '500' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
   error: { color: colors.text, fontSize: 12, marginBottom: 10 },

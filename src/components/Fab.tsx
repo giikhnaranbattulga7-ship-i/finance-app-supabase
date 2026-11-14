@@ -13,8 +13,7 @@ export function Fab({ onPress }: { onPress: () => void }) {
 
 const styles = StyleSheet.create({
   fab: {
-    position: 'absolute', right: 20, bottom: 20, zIndex: 20, width: 58, height: 58, borderRadius: 29,
+    position: 'absolute', right: 20, bottom: 20, zIndex: 20, width: 56, height: 56, borderRadius: 28,
     backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
-    shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6,
   },
 });

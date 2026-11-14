@@ -58,5 +58,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderRadius: 14, padding: 14, marginBottom: 8 },
   icon: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   name: { fontSize: 16, fontWeight: '600', color: colors.text },
-  balance: { fontSize: 16, fontWeight: '700' },
+  balance: { fontSize: 16, fontWeight: '700', color: colors.text },
 });

@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Chip } from '../../components/Chip';
 import { Fab } from '../../components/Fab';
 import { Screen } from '../../components/Screen';
@@ -35,6 +35,7 @@ export default function TransactionsScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMore, setShowMore] = useState(false);
   const requestId = useRef(0); // хуучин хүсэлтийн хариу шинийг дарахаас сэргийлнэ
 
   // Хайлтыг 400ms debounce хийнэ — үсэг бүрд сервер рүү хүсэлт явуулахгүй
@@ -78,6 +79,9 @@ export default function TransactionsScreen() {
   };
 
   const visibleCats = categories.filter((c) => type === 'all' || c.type === type);
+  const activeSort = SORTS.find((s) => s.key === sort)?.label;
+  const activeCategory = categories.find((c) => c.id === categoryId)?.name;
+  const activeExtra = [sort !== 'date_desc' ? activeSort : null, activeCategory].filter(Boolean).join(' · ');
 
   return (
     <Screen title="Гүйлгээ">
@@ -91,17 +95,26 @@ export default function TransactionsScreen() {
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <Chip label="Бүгд" active={type === 'all'} onPress={() => { setType('all'); setCategoryId(null); }} />
-          <Chip label="Орлого" active={type === 'income'} color={colors.income} onPress={() => { setType('income'); setCategoryId(null); }} />
-          <Chip label="Зарлага" active={type === 'expense'} color={colors.expense} onPress={() => { setType('expense'); setCategoryId(null); }} />
-          <View style={{ width: 12 }} />
-          {SORTS.map((s) => <Chip key={s.key} label={s.label} active={sort === s.key} onPress={() => setSort(s.key)} />)}
+          <Chip label="Орлого" active={type === 'income'} onPress={() => { setType('income'); setCategoryId(null); }} />
+          <Chip label="Зарлага" active={type === 'expense'} onPress={() => { setType('expense'); setCategoryId(null); }} />
         </ScrollView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {visibleCats.map((c) => (
-            <Chip key={c.id} label={c.name} color={c.color} active={categoryId === c.id}
-              onPress={() => setCategoryId(categoryId === c.id ? null : c.id)} />
-          ))}
-        </ScrollView>
+        <Pressable accessibilityRole="button" accessibilityLabel="Эрэмбэ, ангилал" onPress={() => setShowMore((open) => !open)} style={styles.more}>
+          <Text style={styles.moreText}>{showMore ? 'Шүүлтээ хаах' : 'Эрэмбэ, ангилал'}</Text>
+        </Pressable>
+        {!showMore && activeExtra ? <Text style={styles.active}>{activeExtra}</Text> : null}
+        {showMore ? (
+          <>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {SORTS.map((s) => <Chip key={s.key} label={s.label} active={sort === s.key} onPress={() => setSort(s.key)} />)}
+            </ScrollView>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {visibleCats.map((c) => (
+                <Chip key={c.id} label={c.name} active={categoryId === c.id}
+                  onPress={() => setCategoryId(categoryId === c.id ? null : c.id)} />
+              ))}
+            </ScrollView>
+          </>
+        ) : null}
       </View>
 
       {loading ? <LoadingView /> : error && items.length === 0 ? (
@@ -142,4 +155,7 @@ const styles = StyleSheet.create({
     height: 48, paddingHorizontal: 14, marginBottom: 10, color: colors.text, fontSize: 16,
   },
   month: { color: colors.muted, fontSize: 13, marginBottom: 8, marginTop: 8 },
+  more: { minHeight: 48, justifyContent: 'center', marginBottom: 8 },
+  moreText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  active: { color: colors.muted, fontSize: 13, marginBottom: 8 },
 });
