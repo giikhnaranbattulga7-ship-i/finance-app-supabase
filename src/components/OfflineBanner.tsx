@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../lib/theme';
 
-// Интернэт тасарсан үед дээд талд улаан мэдэгдэл харуулна
+// Интернэт тасарсан үед дээд талд богино мэдэгдэл харуулна. NetInfo isConnected === false.
 export function OfflineBanner() {
   const [offline, setOffline] = useState(false);
   const insets = useSafeAreaInsets();

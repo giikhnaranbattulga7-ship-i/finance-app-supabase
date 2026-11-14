@@ -51,13 +51,13 @@ export default function BudgetsScreen() {
             const ratio = Number(item.limit_amount) === 0 ? 0 : item.spent / Number(item.limit_amount);
             const status = item.over
               ? `Хэтэрсэн ${formatAmount(item.remaining, 'MNT')}`
-              : `${formatAmount(item.remaining, 'MNT')} үлдсэн / ${formatAmount(Number(item.limit_amount), 'MNT')}`;
+              : `${formatAmount(item.remaining, 'MNT')} үлдсэн`;
             return (
               <Pressable accessibilityRole="button" accessibilityLabel={`${item.category?.name ?? 'Ангилал'} ${status}`} style={styles.card} onPress={() => router.push(`/budget/${item.id}`)}>
                 <Text style={styles.name}>{item.category?.name}</Text>
+                <Text style={styles.left}>{status}</Text>
                 <ProgressBar value={ratio} />
                 <Text style={styles.sub}>{formatAmount(item.spent, 'MNT')} зарцуулсан / {formatAmount(Number(item.limit_amount), 'MNT')}</Text>
-                <Text style={styles.sub}>{status}</Text>
               </Pressable>
             );
           }}
@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
   monthBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, backgroundColor: colors.card, borderRadius: 14, padding: 4 },
   arrow: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   month: { fontSize: 16, fontWeight: '600', color: colors.text },
-  card: { backgroundColor: colors.card, borderRadius: 16, padding: 16, marginBottom: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  card: { backgroundColor: colors.card, borderRadius: 16, padding: 16, marginBottom: 12 },
   name: { fontSize: 16, fontWeight: '600', color: colors.text },
-  sub: { color: colors.muted, fontSize: 13, marginTop: 8 },
+  left: { color: colors.text, fontSize: 22, fontWeight: '700', marginTop: 8, marginBottom: 10 },
+  sub: { color: colors.muted, fontSize: 13, marginTop: 10 },
 });

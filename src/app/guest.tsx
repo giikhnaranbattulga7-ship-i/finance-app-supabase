@@ -60,7 +60,7 @@ export default function GuestScreen() {
 }
 
 const styles = StyleSheet.create({
-  search: { backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, height: 44, paddingHorizontal: 14, marginBottom: 10, color: colors.text },
+  search: { backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, height: 48, paddingHorizontal: 14, marginBottom: 10, color: colors.text },
   tile: { flex: 1, margin: 4, backgroundColor: colors.card, borderRadius: 14, padding: 16, alignItems: 'center' },
   tileText: { marginTop: 6, color: colors.text, fontWeight: '500' },
 });

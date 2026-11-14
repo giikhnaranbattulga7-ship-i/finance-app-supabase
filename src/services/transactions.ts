@@ -51,6 +51,8 @@ export async function getTransaction(id: string): Promise<Transaction> {
   return unwrap(await supabase.from('transactions').select(SELECT).eq('id', id).single());
 }
 
+// Шинэ гүйлгээ. user_id-г энд тавина (RLS: user_id = auth.uid()).
+// Шошго нь transactions дээр биш, transaction_tags хүснэгтэд (N:M) бичигдэнэ.
 export async function createTransaction({ tagIds, ...input }: TxInput) {
   const user_id = await currentUserId();
   const tx = unwrap(await supabase.from('transactions').insert({ ...input, user_id }).select().single()) as Transaction;
