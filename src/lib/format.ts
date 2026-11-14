@@ -1,20 +1,23 @@
-// Тоог мянгатын тусгаарлагчтай ₮ болгох. Жишээ: 1500000 -> "1,500,000₮"
-export function formatMoney(amount: number): string {
-  // toString -> regex-ээр 3 оронтой бүлэг бүрийн өмнө таслал тавина
-  const text = Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return text + '₮';
+import { formatAmount, parseIsoDate } from './finance';
+
+export function formatMoney(amount: number, currency = 'MNT'): string {
+  return formatAmount(amount, currency);
 }
 
-// ISO огноог "2026.11.02" хэлбэрт оруулах
 export function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}.${month}.${day}`;
+  const parts = parseIsoDate(iso);
+  if (!parts) return iso.slice(0, 10);
+  return `${parts.year}.${String(parts.month).padStart(2, '0')}.${String(parts.day).padStart(2, '0')}`;
 }
 
-// Огнооноос "2026-11" гэсэн сарын түлхүүр гаргах (сараар бүлэглэхэд)
 export function monthKey(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const parts = parseIsoDate(iso);
+  if (!parts) return iso.slice(0, 7);
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}`;
+}
+
+export function monthLabel(iso: string): string {
+  const parts = parseIsoDate(iso);
+  if (!parts) return iso;
+  return `${parts.year} оны ${parts.month}-р сар`;
 }

@@ -72,7 +72,7 @@ export default function BudgetForm() {
       <Input label="Сар (YYYY-MM-01)" value={month} onChangeText={setMonth} error={errors.month} />
       <Text style={{ color: colors.muted, fontSize: 13, marginBottom: 6 }}>Зарлагын ангилал</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 }}>
-        {categories.map((c) => <Chip key={c.id} label={c.name} color={c.color} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />)}
+        {categories.map((c) => <Chip key={c.id} label={c.name} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />)}
       </View>
       {errors.category ? <Text style={{ color: colors.expense, fontSize: 12, marginBottom: 8 }}>{errors.category}</Text> : null}
       <Input label="Сарын хязгаар (₮)" value={limit} onChangeText={setLimit} keyboardType="numeric" placeholder="300000" error={errors.limit} />

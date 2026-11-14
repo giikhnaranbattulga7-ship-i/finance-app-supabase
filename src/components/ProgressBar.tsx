@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { colors } from '../lib/theme';
 
-// 0..1 хувийг харуулах зурвас. 1-ээс хэтэрвэл улаан болно (төсөв хэтэрсэн)
-export function ProgressBar({ value, color = colors.primary }: { value: number; color?: string }) {
+// 0..1 зурвас. Хэтрэлтийг өнгөөр биш, хажуугийн «Хэтэрсэн» үгээр харуулна.
+export function ProgressBar({ value }: { value: number }) {
   const pct = Math.min(Math.max(value, 0), 1);
-  const barColor = value > 1 ? colors.expense : value > 0.8 ? colors.warning : color;
+  const barColor = colors.primary;
   return (
     <View style={styles.track}>
       <View style={[styles.fill, { width: `${pct * 100}%`, backgroundColor: barColor }]} />

@@ -1,16 +1,18 @@
-// Апп даяар хэрэглэх өнгө, хэмжээ — нэг газар хадгалснаар дизайн нэгдмэл байна
+// Z Money. Ногоон дээрх үсэг хар. Цагаан үсэг зөвхөн хар эсвэл карт дээр.
 export const colors = {
-  primary: '#4F46E5',
-  primarySoft: '#EEF2FF',
-  income: '#16A34A',
-  expense: '#DC2626',
-  warning: '#F59E0B',
-  bg: '#F3F4F6',
-  card: '#FFFFFF',
-  text: '#111827',
-  muted: '#6B7280',
-  border: '#E5E7EB',
+  primary: '#00BA7C',
+  onAccent: '#000000',
+  primarySoft: '#121212',
+  income: '#FFFFFF',
+  expense: '#FFFFFF',
+  warning: '#8A8A8A',
+  bg: '#000000',
+  card: '#121212',
+  text: '#FFFFFF',
+  muted: '#8A8A8A',
+  border: '#2A2A2A',
 };
 
 export const radius = { sm: 8, md: 12, lg: 20 };
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24 };
+export const touch = 48;

@@ -6,13 +6,12 @@ import { colors } from '../../lib/theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-// 5 таб: name = файлын нэр
+// Profile and accounts are stack screens. Hiding them inside this navigator
+// makes Expo Router replace the focused screen with Нүүр, so the tap looks dead.
 const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: 'home', title: 'Нүүр', icon: 'home' },
   { name: 'transactions', title: 'Гүйлгээ', icon: 'list' },
   { name: 'budgets', title: 'Төсөв', icon: 'pie-chart' },
-  { name: 'accounts', title: 'Данс', icon: 'card' },
-  { name: 'profile', title: 'Профайл', icon: 'person' },
 ];
 
 export default function TabLayout() {
@@ -20,10 +19,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.onAccent,
         tabBarInactiveTintColor: colors.muted,
         tabBarHideOnKeyboard: true,
-        tabBarStyle: Platform.OS === 'web' ? { height: 64, paddingBottom: 8 } : undefined,
+        tabBarStyle: {
+          backgroundColor: colors.bg,
+          borderTopColor: colors.border,
+          height: Platform.OS === 'web' ? 64 : 56,
+          paddingBottom: 8,
+        },
       }}
     >
       {tabs.map((t) => (
@@ -33,6 +37,7 @@ export default function TabLayout() {
           options={{
             title: t.title,
             tabBarIcon: ({ color, size }) => <Ionicons name={t.icon} size={size} color={color as string} />,
+            tabBarActiveBackgroundColor: colors.primary,
           }}
         />
       ))}

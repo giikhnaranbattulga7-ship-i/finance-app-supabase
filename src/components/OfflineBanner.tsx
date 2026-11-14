@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../lib/theme';
 
-// Интернэт тасарсан үед дээд талд улаан мэдэгдэл харуулна
+// Интернэт тасарсан үед дээд талд богино мэдэгдэл харуулна. NetInfo isConnected === false.
 export function OfflineBanner() {
   const [offline, setOffline] = useState(false);
   const insets = useSafeAreaInsets();
@@ -24,6 +24,6 @@ export function OfflineBanner() {
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: colors.expense, paddingVertical: 6, alignItems: 'center' },
-  text: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  bar: { backgroundColor: colors.card, paddingVertical: 6, alignItems: 'center' },
+  text: { color: colors.text, fontSize: 13, fontWeight: '600' },
 });

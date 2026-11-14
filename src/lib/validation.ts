@@ -1,3 +1,5 @@
+import { localTodayISO, MAX_MONEY, parseIsoDate, roundToCents } from './finance';
+
 // Формын оролт шалгах функцууд. Алдаа байвал Монгол мессеж, үгүй бол null буцаана.
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -24,22 +26,25 @@ export function parseAmount(text: string): number {
   return Number(text.replace(/[,\s₮]/g, ''));
 }
 
+export function moneyToStore(text: string): number {
+  return roundToCents(parseAmount(text));
+}
+
 export function validateAmount(text: string, allowZero = false): string | null {
   if (!text.trim()) return 'Дүн оруулна уу';
   const n = parseAmount(text);
   if (!Number.isFinite(n)) return 'Дүн зөвхөн тоо байна';
-  if (allowZero ? n < 0 : n <= 0) return allowZero ? 'Дүн сөрөг байж болохгүй' : 'Дүн 0-ээс их байна';
-  if (n > 1_000_000_000_000) return 'Дүн хэт их байна';
+  const rounded = roundToCents(n);
+  if (allowZero ? rounded < 0 : rounded <= 0) return allowZero ? 'Дүн сөрөг байж болохгүй' : 'Дүн 0-ээс их байна';
+  if (rounded > MAX_MONEY) return 'Дүн хэт их байна';
   return null;
 }
 
 export function validateDate(text: string): string | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return 'Огноо YYYY-MM-DD хэлбэртэй';
-  const d = new Date(text);
-  if (Number.isNaN(d.getTime())) return 'Огноо буруу байна';
+  if (!parseIsoDate(text)) return 'Огноо YYYY-MM-DD хэлбэртэй';
   return null;
 }
 
-export const todayISO = () => new Date().toISOString().slice(0, 10);
+export const todayISO = () => localTodayISO();
 export const monthStartISO = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;

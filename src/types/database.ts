@@ -57,7 +57,7 @@ export interface Transaction {
   created_at: string;
   // join-оор ирэх өгөгдөл
   category?: Pick<Category, 'id' | 'name' | 'icon' | 'color'> | null;
-  account?: Pick<Account, 'id' | 'name'> | null;
+  account?: Pick<Account, 'id' | 'name' | 'currency'> | null;
   transaction_tags?: { tag: Tag }[];
 }
 

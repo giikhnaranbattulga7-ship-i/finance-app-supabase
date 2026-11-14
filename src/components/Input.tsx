@@ -10,7 +10,7 @@ export function Input({ label, error, style, ...rest }: Props) {
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholderTextColor={colors.muted}
-        style={[styles.input, error ? { borderColor: colors.expense } : null, style]}
+        style={[styles.input, error ? { borderColor: colors.text } : null, style]}
         {...rest}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -31,5 +31,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
   },
-  error: { color: colors.expense, fontSize: 12, marginTop: 4 },
+  error: { color: colors.text, fontSize: 12, marginTop: 4 },
 });
